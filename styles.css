@@ -1,0 +1,284 @@
+/* NOMAD VAN LIFE OS — Brand Stylesheet */
+/* Loaded after built-in styles — overrides key visual properties */
+
+:root {
+  --bg: #17120d;
+  --card: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.08);
+  --orange: #d97745;
+  --sand: #e7d7bf;
+  --forest: #3f5d4b;
+  --olive: #7f8f5f;
+  --cream: #f5efe5;
+  --shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* Override body background to brand spec */
+body {
+  background:
+    radial-gradient(circle at top, rgba(217,119,69,0.2), transparent 40%),
+    #17120d !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+body::before {
+  opacity: 0.025 !important;
+}
+
+/* Brand logo image */
+.main-logo {
+  width: 220px;
+  max-width: 85%;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* NOMAD text logo override */
+.logo {
+  background: linear-gradient(90deg, #ffb86a, #ff7d5e, #d97745) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: none !important;
+  letter-spacing: .14em !important;
+}
+
+/* Cards — brand glassmorphism */
+.card {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 28px !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+}
+
+.card::before {
+  display: none !important;
+}
+
+/* Card titles */
+.ct {
+  color: #ffb86a !important;
+  text-shadow: none !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: .04em !important;
+  text-transform: uppercase !important;
+}
+
+/* Inputs */
+input, select, textarea {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: #f5efe5 !important;
+  border-radius: 18px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #d97745 !important;
+  box-shadow: 0 0 0 3px rgba(217,119,69,0.15) !important;
+}
+
+/* Buttons */
+.btn {
+  background: linear-gradient(135deg, #d97745, #c05830) !important;
+  border-radius: 999px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 20px rgba(217,119,69,0.35) !important;
+}
+
+.btn-teal {
+  background: linear-gradient(135deg, #3a8a80, #2a6a60) !important;
+  box-shadow: 0 6px 20px rgba(58,138,128,0.35) !important;
+}
+
+.btn-comm {
+  background: linear-gradient(135deg, #b05030, #803020) !important;
+}
+
+.btn-green {
+  background: linear-gradient(135deg, #3f5d4b, #2f4838) !important;
+}
+
+.bg {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: #c7b39d !important;
+  border-radius: 999px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+.bg:hover {
+  border-color: #d97745 !important;
+  color: #ffb86a !important;
+  background: rgba(217,119,69,0.08) !important;
+}
+
+/* Nav */
+.nav {
+  background: rgba(23,18,13,0.92) !important;
+  border-bottom: 2px solid rgba(217,119,69,0.3) !important;
+}
+
+.nb {
+  color: rgba(231,215,191,0.4) !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+}
+
+.nb.active {
+  color: #ffb86a !important;
+  border-bottom-color: #ffb86a !important;
+}
+
+/* Stat tiles */
+.st {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 20px !important;
+}
+
+.st .val {
+  color: #f5efe5 !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+.st .lbl {
+  color: #9a7a5e !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+/* Stat dashboard tiles */
+.hstat-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 22px !important;
+}
+
+.hstat-val {
+  color: #f5efe5 !important;
+  font-family: Inter, system-ui, sans-serif !important;
+  font-weight: 800 !important;
+}
+
+/* Quick action buttons */
+.qa-btn {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 20px !important;
+  color: #c7b39d !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+.qa-btn:hover {
+  border-color: rgba(217,119,69,0.4) !important;
+  color: #ffb86a !important;
+  background: rgba(217,119,69,0.08) !important;
+}
+
+/* Briefing card */
+.briefing-card {
+  background: rgba(217,119,69,0.08) !important;
+  border: 1px solid rgba(217,119,69,0.2) !important;
+  border-radius: 28px !important;
+}
+
+.briefing-card::before {
+  background: linear-gradient(90deg, #3f5d4b, #ffb86a, #d97745) !important;
+}
+
+/* Tags */
+.tf  { background: rgba(63,93,75,0.2) !important; color: #a0c090 !important; border-color: rgba(63,93,75,0.4) !important; }
+.tfu { background: rgba(217,119,69,0.15) !important; color: #ffb86a !important; border-color: rgba(217,119,69,0.3) !important; }
+.tc  { background: rgba(58,138,128,0.15) !important; color: #6abaa8 !important; border-color: rgba(58,138,128,0.3) !important; }
+.ts  { background: rgba(255,184,106,0.12) !important; color: #ffb86a !important; border-color: rgba(255,184,106,0.25) !important; }
+.tm  { background: rgba(255,255,255,0.05) !important; color: #9a7a5e !important; border-color: rgba(255,255,255,0.1) !important; }
+
+/* Progress bars */
+.pw {
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 999px !important;
+  border: none !important;
+}
+
+/* Mood buttons */
+.mb {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 18px !important;
+}
+
+.mb.sel, .mb:hover {
+  border-color: #d97745 !important;
+  background: rgba(217,119,69,0.12) !important;
+}
+
+/* Quote box */
+.qbox {
+  background: rgba(217,119,69,0.08) !important;
+  border: 1px solid rgba(217,119,69,0.18) !important;
+  border-radius: 24px !important;
+}
+
+.qbox .qt { color: #ffb86a !important; }
+
+/* Dividers */
+.div {
+  background: linear-gradient(90deg, transparent, rgba(217,119,69,0.2), transparent) !important;
+}
+
+/* Community */
+.comm-spot, .comm-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 22px !important;
+}
+
+.cf-btn {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 999px !important;
+}
+
+.cf-btn.active {
+  border-color: #d97745 !important;
+  color: #ffb86a !important;
+  background: rgba(217,119,69,0.1) !important;
+}
+
+/* Goal cards */
+.goal-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 24px !important;
+}
+
+/* Van needs */
+.vn-card {
+  background: rgba(255,255,255,0.04) !important;
+  border-radius: 22px !important;
+}
+
+.vn-card.urg-critical { background: rgba(192,64,64,0.08) !important; }
+.vn-card.urg-soon { background: rgba(217,119,69,0.08) !important; }
+
+/* Alerts */
+.h-alert {
+  border-radius: 20px !important;
+  font-family: Inter, system-ui, sans-serif !important;
+}
+
+/* Scroll */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(217,119,69,0.3); border-radius: 3px; }

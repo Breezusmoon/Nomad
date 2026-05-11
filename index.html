@@ -400,7 +400,1010 @@ textarea{resize:vertical;min-height:80px}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(224,122,63,.28);border-radius:2px}
+
+/* ══════════════════════════════════════════════════════
+   DESKTOP LAYOUT — sidebar nav + multi-column content
+   ══════════════════════════════════════════════════════ */
+@media(min-width:768px){
+
+  body{padding-bottom:0;display:flex;flex-direction:column}
+
+  /* ── DESKTOP NAV → LEFT SIDEBAR ── */
+  .nav{
+    position:fixed;left:0;top:0;bottom:0;
+    flex-direction:column;overflow-y:auto;overflow-x:hidden;
+    width:72px;border-bottom:none;
+    border-right:1px solid rgba(224,122,63,.15);
+    background:rgba(10,8,4,.98);
+    box-shadow:4px 0 32px rgba(0,0,0,.6);
+    padding:12px 0;z-index:500;
+    scrollbar-width:none;
+  }
+  .nav::-webkit-scrollbar{display:none}
+  .nb{
+    width:100%;padding:10px 6px;flex-direction:column;
+    border-bottom:none;border-left:3px solid transparent;border-right:none;
+    margin-bottom:0;margin-left:-3px;font-size:8.5px;
+  }
+  .nb.active{border-left-color:var(--amber);border-bottom-color:transparent}
+  .nb.community-nb.active{border-left-color:var(--orange-hi);border-bottom-color:transparent}
+
+  /* ── MAIN CONTENT AREA ── */
+  .tab{
+    margin-left:72px;
+    padding:0 24px 32px;
+    max-width:none;
+    width:calc(100vw - 72px);
+    animation:fadeSlide .28s ease;
+  }
+
+  /* ── HERO on desktop ── */
+  .hero-wrap{height:220px;margin:0 -24px 0}
+
+  /* ── TWO-COLUMN LAYOUT for most tabs ── */
+  .desktop-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+  .desktop-cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start}
+  .desktop-full{grid-column:1/-1}
+
+  /* ── COMPACT STAT GRID ── */
+  .sg4{grid-template-columns:repeat(4,1fr)}
+  .sg3{grid-template-columns:repeat(3,1fr)}
+  .home-stats-grid{grid-template-columns:repeat(4,1fr);gap:10px}
+  .quick-actions-grid{grid-template-columns:repeat(6,1fr);gap:8px}
+
+  /* ── COMPACT CARDS ── */
+  .card{margin-bottom:12px;padding:16px}
+  .ct{font-size:17px;margin-bottom:11px}
+  .ph{padding:14px 0 12px}
+  .ph h1{font-size:32px}
+
+  /* ── MEAL PLAN COMPACT GRID ── */
+  .fp-week-grid{
+    display:grid;
+    grid-template-columns:64px repeat(7,1fr);
+    gap:0;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;overflow:hidden;
+  }
+  .fp-wg-header{
+    background:rgba(0,0,0,.4);
+    padding:8px 6px;
+    text-align:center;
+    font-family:var(--ffq);font-size:10px;font-weight:800;
+    letter-spacing:.07em;text-transform:uppercase;
+    color:var(--amber);border-bottom:1px solid rgba(255,255,255,.08);
+    border-right:1px solid rgba(255,255,255,.06);
+  }
+  .fp-wg-header:last-child{border-right:none}
+  .fp-wg-label{
+    background:rgba(0,0,0,.3);
+    padding:8px 6px;
+    font-family:var(--ffq);font-size:9px;font-weight:900;
+    letter-spacing:.1em;text-transform:uppercase;
+    color:var(--faint);display:flex;align-items:center;justify-content:center;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    border-right:1px solid rgba(255,255,255,.08);
+  }
+  .fp-wg-cell{
+    padding:4px;border-bottom:1px solid rgba(255,255,255,.05);
+    border-right:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.18);
+  }
+  .fp-wg-cell:last-child{border-right:none}
+  .fp-wg-row-last .fp-wg-cell,.fp-wg-row-last .fp-wg-label{border-bottom:none}
+  .fp-wg-input{
+    width:100%;background:transparent;border:none;padding:5px 6px;
+    font-size:12px;color:var(--cream);font-family:var(--ff);outline:none;
+    margin:0;border-radius:6px;transition:background .18s;
+  }
+  .fp-wg-input:focus{background:rgba(224,122,63,.12)}
+  .fp-wg-input::placeholder{color:rgba(184,144,106,.35);font-size:11px}
+
+  /* ── POWER TAB — 2 col ── */
+  .power-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .power-results{grid-column:1/-1}
+
+  /* ── ROUTINES — compact list ── */
+  .rt-card{margin-bottom:8px;padding:12px 14px}
+  .rt-name{font-size:17px}
+
+  /* ── GOALS — 2 col ── */
+  #goals-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .goal-card{margin-bottom:0}
+
+  /* ── VAN NEEDS — 2 col ── */
+  #vn-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .vn-card{margin-bottom:0}
+
+  /* ── SPOTS — 2 col ── */
+  #spots-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #spots-list .card.teal{margin-bottom:0}
+
+  /* ── COMMUNITY — compact ── */
+  #comm-spots-list,#comm-moments-list,#comm-board-list{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px
+  }
+  .comm-spot,.comm-card{margin-bottom:0}
+
+  /* ── DIARY — 2 col ── */
+  #diary-list{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .de{margin-bottom:0}
+
+  /* ── PACK LISTS ── */
+  #pk-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pkc{margin-bottom:0}
+
+  /* ── FAK ── */
+  #fak-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fak-item{margin-bottom:0}
+
+  /* ── MOON CALENDAR ── wider ── */
+  .mpr-row{grid-template-columns:repeat(8,1fr)}
+
+  /* ── RECIPES ── 2 col ── */
+  #rec-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rc{margin-bottom:0}
+
+  /* ── GVM items ── */
+  #gvm-items{max-height:200px;overflow-y:auto}
+
+  /* ── SIGNAL LOG ── 2 col ── */
+  #sig-log{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #sig-log .lr{margin-bottom:0;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 10px;background:rgba(0,0,0,.2)}
+
+  /* ── SIM CARDS side by side ── */
+  #sim-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .sim-card{margin-bottom:0}
+
+  /* ── EMERGENCY — 2 col forms ── */
+  .em-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+
+  /* ── HOME TAB — dashboard layout ── */
+  .home-dash-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:4px}
+  .home-dash-full{grid-column:1/-1}
+  .hero-wrap{margin:0 -24px 0}
+
+  /* ── ACCORDION compact ── */
+  .collapsible-body{max-height:320px;overflow-y:auto;scrollbar-width:thin}
+  .collapsible-body::-webkit-scrollbar{width:3px}
+  .collapsible-body::-webkit-scrollbar-thumb{background:rgba(224,122,63,.25);border-radius:2px}
+}
+
+@media(min-width:1100px){
+  .tab{padding:0 32px 32px}
+  .desktop-cols-3{grid-template-columns:1fr 1fr 1fr}
+  #goals-list{grid-template-columns:1fr 1fr 1fr}
+  #comm-spots-list,#comm-moments-list{grid-template-columns:1fr 1fr 1fr}
+}
+/* ═══════════════════════════════════════════════════════════
+   NOMAD v11 — WORLD CLASS PREMIUM LAYER
+   Cinematic · Atmospheric · Emotional · Alive
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── ANIMATED AMBIENT BACKGROUND ── */
+@keyframes bgBreath {
+  0%,100% { background-position: 0% 50%; filter: brightness(1); }
+  50%      { background-position: 100% 50%; filter: brightness(1.04); }
+}
+body { animation: bgBreath 30s ease-in-out infinite; }
+
+/* ── GRAIN TEXTURE ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9998;
+  opacity: .042;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* ── ENVIRONMENTAL OVERLAYS ── */
+.env-overlay {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9990;
+  transition: opacity 3s ease;
+  opacity: 0;
+}
+.env-dawn    { background: linear-gradient(180deg, rgba(255,140,80,.08) 0%, transparent 50%); }
+.env-golden  { background: linear-gradient(180deg, rgba(255,160,60,.12) 0%, rgba(200,80,30,.06) 100%); }
+.env-night   { background: linear-gradient(180deg, rgba(10,8,30,.25) 0%, rgba(5,4,18,.15) 100%); }
+.env-rain    { background: linear-gradient(180deg, rgba(40,60,80,.15) 0%, rgba(20,40,60,.1) 100%); }
+.env-active  { opacity: 1; }
+
+/* ── RAIN PARTICLES ── */
+.rain-drop {
+  position: fixed;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(180,220,255,.4));
+  pointer-events: none;
+  z-index: 9991;
+  animation: rainFall linear infinite;
+  opacity: 0;
+}
+@keyframes rainFall {
+  0%   { transform: translateY(-20px) rotate(15deg); opacity: 0; }
+  5%   { opacity: .6; }
+  95%  { opacity: .4; }
+  100% { transform: translateY(100vh) rotate(15deg); opacity: 0; }
+}
+
+/* ── PARTICLE SYSTEM ── */
+.particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9992;
+  animation: particleFloat linear infinite;
+  opacity: 0;
+}
+@keyframes particleFloat {
+  0%   { transform: translateY(100vh) scale(1); opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: .7; }
+  100% { transform: translateY(-50px) scale(.5) translateX(var(--drift,0px)); opacity: 0; }
+}
+
+/* ── EMBER PARTICLES ── */
+.ember {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9992;
+  background: radial-gradient(circle, #fff8e0, #ffaa30);
+  box-shadow: 0 0 6px #ff8020;
+  animation: emberFloat linear infinite;
+  opacity: 0;
+}
+@keyframes emberFloat {
+  0%   { transform: translateY(0) scale(1); opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: .7; }
+  100% { transform: translateY(-180px) translateX(var(--dx,20px)) scale(.2); opacity: 0; }
+}
+
+/* ── STAR SYSTEM ── */
+.star-field { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: starBlink ease-in-out infinite;
+}
+@keyframes starBlink {
+  0%,100% { opacity: .1; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.6); }
+}
+.shooting-star {
+  position: absolute;
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.8), rgba(255,255,255,0));
+  animation: shootingStar 8s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes shootingStar {
+  0%   { opacity: 0; transform: translateX(-100px) translateY(0) rotate(-35deg); }
+  10%  { opacity: 1; }
+  30%  { opacity: 0; transform: translateX(200px) translateY(60px) rotate(-35deg); }
+  100% { opacity: 0; }
+}
+
+/* ── SUN RAYS ── */
+.sun-rays {
+  position: absolute;
+  bottom: 70px; left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
+}
+.sun-ray {
+  position: absolute;
+  bottom: 0; left: 50%;
+  width: 2px;
+  background: linear-gradient(to top, rgba(255,200,80,.25), transparent);
+  transform-origin: bottom center;
+  animation: rayGlow 4s ease-in-out infinite;
+}
+@keyframes rayGlow {
+  0%,100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+
+/* ── MOUNTAIN SHIMMER ── */
+.mtn-far {
+  animation: mtnShimmer 12s ease-in-out infinite alternate;
+}
+@keyframes mtnShimmer {
+  from { filter: brightness(.95); }
+  to   { filter: brightness(1.05); }
+}
+
+/* ── VAN ANIMATION ── */
+.van-svg {
+  animation: vanBob 3.5s ease-in-out infinite !important;
+  will-change: transform;
+}
+@keyframes vanBob {
+  0%,100% { transform: translateX(-50%) translateY(0px); }
+  30%      { transform: translateX(-50%) translateY(-5px); }
+  70%      { transform: translateX(-50%) translateY(-3px); }
+}
+
+/* ── HERO ENTRANCE ANIMATIONS ── */
+.hero-logo-txt, .hero-logo-img {
+  animation: heroLogoIn 1s cubic-bezier(.34,1.28,.64,1) .15s both !important;
+}
+@keyframes heroLogoIn {
+  from { opacity:0; transform: scale(.7) translateY(-24px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.hero-sub-txt { animation: heroFadeUp .9s ease .55s both !important; }
+.hero-tag     { animation: heroFadeUp .8s ease .8s both !important; }
+@keyframes heroFadeUp {
+  from { opacity:0; transform: translateY(14px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── LOGO PULSE ── */
+.hero-logo-txt {
+  animation: heroLogoIn 1s cubic-bezier(.34,1.28,.64,1) .15s both,
+             logoPulse 7s ease-in-out 1.5s infinite !important;
+}
+@keyframes logoPulse {
+  0%,100% { filter: drop-shadow(0 2px 16px rgba(224,122,63,.45)); }
+  50%      { filter: drop-shadow(0 2px 32px rgba(224,122,63,.75)); }
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px) scale(.99);
+  transition: opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1);
+  will-change: opacity, transform;
+}
+.revealed {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+.rd1 { transition-delay: .06s !important; }
+.rd2 { transition-delay: .12s !important; }
+.rd3 { transition-delay: .18s !important; }
+.rd4 { transition-delay: .24s !important; }
+
+/* ── PREMIUM CARD HOVER ── */
+.card {
+  will-change: transform, box-shadow;
+  transition: transform .32s cubic-bezier(.34,1.28,.64,1), box-shadow .32s ease !important;
+}
+.card:hover {
+  transform: translateY(-4px) scale(1.005) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 90px rgba(224,122,63,.1), 0 1px 0 rgba(255,255,255,.1) inset !important;
+}
+.card:active { transform: translateY(-1px) scale(.998) !important; }
+
+/* Card shimmer overlay */
+.card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), transparent);
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+  pointer-events: none;
+}
+.card:hover::after { left: 160%; }
+
+/* ── BUTTON PREMIUM ── */
+.btn {
+  transition: all .28s cubic-bezier(.34,1.56,.64,1) !important;
+  will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+.btn:hover {
+  transform: translateY(-3px) scale(1.03) !important;
+  box-shadow: 0 12px 40px rgba(168,72,32,.7), 0 0 70px rgba(224,122,63,.35) !important;
+}
+.btn:active { transform: scale(.97) translateY(0) !important; }
+
+/* Ripple effect */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  transform: scale(0);
+  animation: rippleOut .6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes rippleOut { to { transform: scale(4); opacity: 0; } }
+
+/* ── NAV GLOW ── */
+.nb { transition: all .28s cubic-bezier(.34,1.56,.64,1) !important; }
+.nb .ni { transition: transform .28s cubic-bezier(.34,1.56,.64,1) !important; }
+.nb.active { text-shadow: 0 0 16px rgba(240,180,76,.7) !important; }
+.nb.active .ni { filter: drop-shadow(0 0 10px rgba(240,180,76,.7)); }
+.nb:hover .ni { filter: drop-shadow(0 0 6px rgba(240,180,76,.45)); }
+
+/* ── QUICK ACTIONS ── */
+.qa-btn {
+  transition: all .3s cubic-bezier(.34,1.56,.64,1) !important;
+  position: relative; overflow: hidden;
+}
+.qa-btn:hover {
+  transform: translateY(-5px) scale(1.07) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.55), 0 0 28px rgba(224,122,63,.2) !important;
+}
+.qa-btn:active { transform: scale(.94) !important; }
+.qa-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,.07), transparent 60%);
+  pointer-events: none;
+}
+
+/* ── STAT CARDS ── */
+.hstat-card {
+  transition: all .32s cubic-bezier(.34,1.28,.64,1) !important;
+  position: relative; overflow: hidden;
+}
+.hstat-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% -20%, rgba(255,255,255,.07), transparent 55%);
+  pointer-events: none;
+}
+.hstat-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 18px 44px rgba(0,0,0,.65), 0 0 50px rgba(224,122,63,.15) !important;
+}
+
+/* ── MOOD BUTTONS ── */
+.mb { transition: all .32s cubic-bezier(.34,1.56,.64,1) !important; }
+.mb:hover {
+  transform: scale(1.2) translateY(-5px) rotate(-4deg) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.5), 0 0 35px rgba(224,122,63,.3) !important;
+}
+.mb.sel {
+  animation: moodBurst .4s cubic-bezier(.34,1.56,.64,1) both !important;
+}
+@keyframes moodBurst {
+  0%   { transform: scale(.8); box-shadow: 0 0 0 0 rgba(224,122,63,.5); }
+  50%  { transform: scale(1.2); box-shadow: 0 0 0 12px rgba(224,122,63,0); }
+  100% { transform: scale(1.08); }
+}
+
+/* ── LIKE BUTTON POP ── */
+.like-btn.liked { animation: likeHeart .45s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes likeHeart {
+  0%  { transform: scale(.8); }
+  40% { transform: scale(1.35); }
+  70% { transform: scale(.95); }
+  100%{ transform: scale(1); }
+}
+
+/* ── PROGRESS BAR SHIMMER ── */
+.pb {
+  overflow: hidden;
+  position: relative;
+}
+.pb::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.22) 50%, transparent 100%);
+  transform: translateX(-100%) skewX(-20deg);
+  animation: barShimmer 2.8s ease-in-out infinite;
+}
+@keyframes barShimmer {
+  0%   { transform: translateX(-100%) skewX(-20deg); }
+  100% { transform: translateX(400%) skewX(-20deg); }
+}
+
+/* ── BRIEFING CARD AMBIENT ── */
+.briefing-card {
+  overflow: hidden;
+  position: relative;
+}
+.briefing-card::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at 30% 60%, rgba(240,180,76,.06), transparent 55%);
+  animation: briefAmbient 10s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes briefAmbient {
+  0%,100% { transform: translate(0,0); }
+  33%      { transform: translate(15px,-8px); }
+  66%      { transform: translate(-10px,12px); }
+}
+
+/* ── CRITICAL VAN NEEDS PULSE ── */
+.vn-card.urg-critical {
+  animation: critPulse 3s ease-in-out infinite;
+}
+@keyframes critPulse {
+  0%,100% { box-shadow: var(--sh); }
+  50%      { box-shadow: var(--sh), 0 0 0 6px rgba(204,64,64,.14); }
+}
+
+/* ── COMMUNITY CARDS ── */
+.comm-spot, .comm-card {
+  transition: all .3s cubic-bezier(.34,1.28,.64,1) !important;
+}
+.comm-spot:hover, .comm-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.55), 0 0 50px rgba(224,122,63,.1) !important;
+}
+
+/* ── GOAL CARDS ── */
+.goal-card { transition: all .3s cubic-bezier(.34,1.28,.64,1) !important; }
+.goal-card:hover { transform: translateY(-4px) !important; }
+
+/* ── SCORE RING ── */
+.score-ring { animation: ringGlow 5s ease-in-out infinite !important; }
+@keyframes ringGlow {
+  0%,100% { box-shadow: 0 0 40px rgba(224,122,63,.22), inset 0 0 22px rgba(224,122,63,.06); }
+  50%      { box-shadow: 0 0 70px rgba(224,122,63,.45), inset 0 0 40px rgba(224,122,63,.12); }
+}
+
+/* ── TAB TRANSITIONS ── */
+.tab.active { animation: tabIn .38s cubic-bezier(.4,0,.2,1) !important; }
+@keyframes tabIn {
+  from { opacity:0; transform: translateY(14px) scale(.99); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* ── ONBOARDING ── */
+.onboard-logo {
+  animation: onboardLogo 1s cubic-bezier(.34,1.28,.64,1) both,
+             logoPulse 7s 1.2s ease-in-out infinite !important;
+}
+@keyframes onboardLogo {
+  from { opacity:0; transform: scale(.6) translateY(-30px); }
+  to   { opacity:1; transform: scale(1) translateY(0); }
+}
+.onboard-card { animation: onboardCard .8s cubic-bezier(.34,1.28,.64,1) .3s both !important; }
+@keyframes onboardCard {
+  from { opacity:0; transform: translateY(30px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   CAMPFIRE MODE — SIGNATURE IMMERSIVE EXPERIENCE
+   ══════════════════════════════════════════════════════════ */
+.campfire-overlay {
+  position: fixed; inset: 0;
+  z-index: 10000;
+  background: #060402;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+.campfire-overlay.active { display: flex; }
+
+/* Campfire night sky */
+.cf-sky {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 100% 60% at 50% 0%, #0a0820 0%, #060402 60%);
+}
+.cf-moon {
+  position: absolute;
+  top: 8%; left: 65%;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff8e0, #f0d890 50%, #c8a840 100%);
+  box-shadow: 0 0 30px rgba(255,240,160,.3), 0 0 80px rgba(255,200,80,.15);
+  animation: moonGlow 8s ease-in-out infinite;
+}
+@keyframes moonGlow {
+  0%,100% { box-shadow: 0 0 30px rgba(255,240,160,.3), 0 0 80px rgba(255,200,80,.15); }
+  50%      { box-shadow: 0 0 50px rgba(255,240,160,.5), 0 0 120px rgba(255,200,80,.25); }
+}
+
+/* Ground and fire glow */
+.cf-ground {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 35%;
+  background: linear-gradient(to top, #0e0804 0%, #1a1006 40%, transparent 100%);
+}
+.cf-glow {
+  position: absolute; bottom: 22%; left: 50%; transform: translateX(-50%);
+  width: 320px; height: 160px;
+  background: radial-gradient(ellipse 80% 50%, rgba(255,100,20,.35) 0%, rgba(200,60,10,.15) 40%, transparent 70%);
+  animation: fireGlow 2s ease-in-out infinite;
+  filter: blur(8px);
+}
+@keyframes fireGlow {
+  0%,100% { transform: translateX(-50%) scale(1); opacity: .9; }
+  25%      { transform: translateX(-50%) scale(1.08) skewX(-2deg); opacity: 1; }
+  75%      { transform: translateX(-50%) scale(.95) skewX(2deg); opacity: .8; }
+}
+.cf-fire-wrap {
+  position: absolute; bottom: 24%; left: 50%; transform: translateX(-50%);
+  z-index: 2;
+}
+
+/* SVG flame */
+.cf-flame {
+  animation: flameDance ease-in-out infinite;
+}
+@keyframes flameDance {
+  0%   { transform: scaleX(1) scaleY(1) skewX(0deg); }
+  15%  { transform: scaleX(1.08) scaleY(1.05) skewX(-3deg); }
+  30%  { transform: scaleX(.94) scaleY(.97) skewX(2deg); }
+  50%  { transform: scaleX(1.05) scaleY(1.03) skewX(-2deg); }
+  70%  { transform: scaleX(.96) scaleY(.98) skewX(3deg); }
+  85%  { transform: scaleX(1.04) scaleY(1.04) skewX(-1deg); }
+  100% { transform: scaleX(1) scaleY(1) skewX(0deg); }
+}
+.cf-flame-1 { animation-duration: 1.4s; }
+.cf-flame-2 { animation-duration: 1.7s; animation-delay: .2s; }
+.cf-flame-3 { animation-duration: 1.2s; animation-delay: .4s; }
+
+/* Logs */
+.cf-logs {
+  position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  width: 120px; height: 30px; z-index: 1;
+}
+
+/* Campfire UI */
+.cf-ui {
+  position: relative; z-index: 10;
+  width: 100%; max-width: 420px;
+  padding: 0 24px 40px;
+  text-align: center;
+}
+.cf-title {
+  font-family: var(--ffd);
+  font-size: 36px; font-weight: 700;
+  letter-spacing: .12em;
+  color: #f0b44c;
+  text-shadow: 0 0 40px rgba(240,140,30,.6), 0 0 80px rgba(200,80,20,.3);
+  margin-bottom: 4px;
+  animation: cfTitleGlow 4s ease-in-out infinite;
+}
+@keyframes cfTitleGlow {
+  0%,100% { text-shadow: 0 0 40px rgba(240,140,30,.6), 0 0 80px rgba(200,80,20,.3); }
+  50%      { text-shadow: 0 0 60px rgba(240,140,30,.9), 0 0 120px rgba(200,80,20,.5); }
+}
+.cf-sub {
+  font-family: var(--ffs);
+  font-size: 18px; color: rgba(240,200,120,.5);
+  margin-bottom: 28px;
+}
+.cf-controls {
+  display: flex; gap: 12px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 20px;
+}
+.cf-btn-sound {
+  background: rgba(255,255,255,.07);
+  border: 1.5px solid rgba(255,200,100,.2);
+  border-radius: 999px;
+  color: rgba(240,200,120,.7);
+  padding: 10px 18px;
+  font-size: 13px; font-weight: 700;
+  font-family: var(--ffq);
+  cursor: pointer;
+  transition: all .28s ease;
+  display: flex; align-items: center; gap: 7px;
+  backdrop-filter: blur(12px);
+}
+.cf-btn-sound:hover, .cf-btn-sound.playing {
+  border-color: rgba(240,180,76,.6);
+  color: var(--amber);
+  background: rgba(240,180,76,.1);
+  box-shadow: 0 0 20px rgba(240,180,76,.15);
+}
+.cf-close {
+  position: absolute; top: 24px; right: 24px;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 50%;
+  color: rgba(255,255,255,.5);
+  width: 40px; height: 40px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .22s ease; z-index: 20;
+  font-family: var(--ff);
+}
+.cf-close:hover {
+  background: rgba(255,100,50,.15);
+  border-color: rgba(255,100,50,.3);
+  color: #ff8060;
+}
+.cf-note {
+  font-size: 12px; color: rgba(200,160,80,.35);
+  font-family: var(--ffq); letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* Campfire stars */
+.cf-stars { position: absolute; inset: 0; pointer-events: none; }
+.cf-star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: cfStarBlink ease-in-out infinite;
+}
+@keyframes cfStarBlink {
+  0%,100% { opacity: .1; }
+  50%      { opacity: .9; }
+}
+
+/* Campfire embers */
+.cf-ember {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff8e0, #ffaa30);
+  box-shadow: 0 0 4px #ff6020;
+  pointer-events: none;
+  animation: cfEmberRise linear forwards;
+}
+@keyframes cfEmberRise {
+  0%   { transform: translateY(0) scale(1); opacity: 0; }
+  5%   { opacity: 1; }
+  90%  { opacity: .7; }
+  100% { transform: translateY(-200px) translateX(var(--dx)) scale(.15); opacity: 0; }
+}
+
+/* Campfire ambience button (in nav) */
+.campfire-nav-btn {
+  position: relative;
+}
+.campfire-nav-btn .ni {
+  animation: campfireGlow 3s ease-in-out infinite;
+}
+@keyframes campfireGlow {
+  0%,100% { filter: drop-shadow(0 0 0 transparent); }
+  50%      { filter: drop-shadow(0 0 8px rgba(255,150,30,.7)); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   JOURNEY MODE — CINEMATIC DOCUMENTARY INTERFACE
+   ══════════════════════════════════════════════════════════ */
+.journey-overlay {
+  position: fixed; inset: 0;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.journey-overlay.active { display: flex; }
+.journey-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #0a1418 0%, #101c12 40%, #0e1408 100%);
+}
+.journey-bg-img {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  opacity: 0.35;
+  animation: journeyBgPan 20s ease-in-out infinite alternate;
+}
+@keyframes journeyBgPan {
+  from { transform: scale(1.1) translateX(-5%); }
+  to   { transform: scale(1.15) translateX(5%); }
+}
+.journey-overlay-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(10,20,24,.4) 0%, rgba(8,16,10,.7) 60%, rgba(6,10,6,.95) 100%);
+}
+.journey-content {
+  position: relative; z-index: 10;
+  flex: 1; display: flex; flex-direction: column;
+  padding: 0 24px 32px;
+  max-width: 500px; margin: 0 auto; width: 100%;
+  justify-content: flex-end;
+}
+.journey-close {
+  position: absolute; top: 24px; right: 24px;
+  background: rgba(255,255,255,.08);
+  border: 1.5px solid rgba(255,255,255,.12);
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  color: rgba(255,255,255,.5);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 20;
+  font-family: var(--ff);
+  transition: all .22s;
+}
+.journey-eyebrow {
+  font-family: var(--ffq);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(78,163,154,.7);
+  margin-bottom: 8px;
+  animation: journeyFadeIn .8s ease .2s both;
+}
+.journey-heading {
+  font-family: var(--ffd);
+  font-size: 48px; font-weight: 700;
+  letter-spacing: .05em; line-height: 1;
+  background: linear-gradient(135deg, #f4ede0 0%, #dcc09a 60%, #c88a28 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+  animation: journeyFadeIn .9s ease .35s both;
+}
+.journey-sub {
+  font-family: var(--ffs);
+  font-size: 20px; color: rgba(220,192,154,.6);
+  margin-bottom: 32px;
+  animation: journeyFadeIn .8s ease .5s both;
+}
+@keyframes journeyFadeIn {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.journey-cards {
+  display: grid; gap: 10px;
+  animation: journeyFadeIn .8s ease .65s both;
+}
+.journey-card {
+  background: rgba(0,0,0,.45);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px; padding: 16px 18px;
+  backdrop-filter: blur(20px);
+  display: flex; align-items: center; gap: 14px;
+  transition: all .28s ease;
+}
+.journey-card:hover {
+  border-color: rgba(240,180,76,.25);
+  background: rgba(0,0,0,.55);
+  transform: translateX(4px);
+}
+.jc-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 8px rgba(240,180,76,.4));
+  flex-shrink: 0;
+}
+.jc-label {
+  font-family: var(--ffq);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.jc-value {
+  font-family: var(--ffd);
+  font-size: 20px; font-weight: 700;
+  color: var(--cream); letter-spacing: .04em;
+}
+.jc-sub {
+  font-size: 12px; color: var(--muted);
+  font-weight: 500;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FREEDOM METRICS
+   ══════════════════════════════════════════════════════════ */
+.fm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.fm-card {
+  background: linear-gradient(145deg, rgba(0,0,0,.35), rgba(37,27,13,.75));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px; padding: 16px 14px;
+  text-align: center;
+  transition: all .3s cubic-bezier(.34,1.28,.64,1);
+  position: relative; overflow: hidden;
+  cursor: pointer;
+}
+.fm-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(240,180,76,.25);
+  box-shadow: 0 12px 36px rgba(0,0,0,.55), 0 0 40px rgba(224,122,63,.1);
+}
+.fm-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% -10%, rgba(255,255,255,.06), transparent 55%);
+  pointer-events: none;
+}
+.fm-icon { font-size: 28px; margin-bottom: 8px; line-height: 1; }
+.fm-value {
+  font-family: var(--ffd);
+  font-size: 32px; font-weight: 700;
+  color: var(--orange-hi);
+  letter-spacing: .05em; line-height: 1;
+  text-shadow: 0 0 24px rgba(224,122,63,.4);
+  margin-bottom: 4px;
+}
+.fm-label {
+  font-family: var(--ffq);
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--faint);
+}
+
+/* FM total banner */
+.fm-banner {
+  background: linear-gradient(135deg, rgba(168,100,28,.2), rgba(63,93,75,.12));
+  border: 1px solid rgba(240,180,76,.2);
+  border-radius: 20px; padding: 20px;
+  text-align: center; margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+.fm-banner::before {
+  content: '';
+  position: absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--amber), var(--orange-hi), transparent);
+}
+.fm-tagline {
+  font-family: var(--ffs);
+  font-size: 22px; color: var(--amber);
+  margin-bottom: 4px;
+  text-shadow: 0 0 24px rgba(240,180,76,.4);
+}
+.fm-days {
+  font-family: var(--ffd);
+  font-size: 64px; font-weight: 700;
+  letter-spacing: .05em; line-height: 1;
+  background: linear-gradient(160deg, var(--amber), var(--orange-hi), var(--forest-hi));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 20px rgba(224,122,63,.4));
+}
+.fm-days-label {
+  font-family: var(--ffq);
+  font-size: 11px; font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase;
+  color: rgba(220,192,154,.4);
+  margin-top: 2px;
+}
+
+/* ── DESKTOP SIDEBAR PREMIUM ── */
+@media(min-width:768px){
+  .nav {
+    background: linear-gradient(180deg, rgba(8,5,2,.99) 0%, rgba(16,11,5,.99) 100%) !important;
+    box-shadow: 4px 0 40px rgba(0,0,0,.7), 1px 0 0 rgba(224,122,63,.08) !important;
+  }
+  .nb:hover { background: rgba(224,122,63,.06); border-radius: 8px; margin: 0 4px; }
+  .nb.active {
+    background: rgba(240,180,76,.06);
+    border-radius: 8px; margin: 0 4px;
+    box-shadow: inset 2px 0 0 var(--amber);
+  }
+}
+
+/* ── INPUT FOCUS ANIMATION ── */
+input, select, textarea {
+  transition: all .28s cubic-bezier(.34,1.28,.64,1) !important;
+}
+input:focus, select:focus, textarea:focus {
+  transform: translateY(-1px) !important;
+}
+
+/* ── ALERT ENTRANCE ── */
+.h-alert { animation: alertSlide .4s cubic-bezier(.34,1.28,.64,1) both; }
+@keyframes alertSlide {
+  from { opacity:0; transform: translateX(-14px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+/* ── PREMIUM SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--orange), var(--amber));
+  border-radius: 2px;
+}
+
+/* ── HAPTIC TOUCH STATES ── */
+@media(pointer:coarse){
+  .card:active, .qa-btn:active, .hstat-card:active {
+    transform: scale(.97) !important;
+    transition-duration: .12s !important;
+  }
+}
+
 </style>
+</head>
+
 
 </head>
 
@@ -477,6 +1480,8 @@ textarea{resize:vertical;min-height:80px}
   <button class="nb" onclick="ST('emergency',this)"><span class="ni">🆘</span>Emergency</button>
   <button class="nb" onclick="ST('pack',this)"><span class="ni">🎒</span>Pack</button>
   <button class="nb" onclick="ST('soul',this)"><span class="ni">✨</span>Soul</button>
+  <button class="nb campfire-nav-btn" onclick="openCampfire()"><span class="ni">🔥</span>Fire</button>
+  <button class="nb" onclick="openJourney()"><span class="ni">🧭</span>Journey</button>
 </nav>
 
 <!-- ═══ HOME ═══ -->
@@ -607,56 +1612,57 @@ textarea{resize:vertical;min-height:80px}
   </div>
 
   <!-- VIBE + QUOTE -->
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div class="ct" style="margin-bottom:0">VIBE CHECK</div>
-      <div style="font-size:13px;color:var(--muted);font-weight:500" id="mood-st">How are you feeling?</div>
+  <div class="home-dash-layout">
+    <div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="ct" style="margin-bottom:0">VIBE CHECK</div>
+          <div style="font-size:13px;color:var(--muted);font-weight:500" id="mood-st">How are you feeling?</div>
+        </div>
+        <div class="mood-g">
+          <button class="mb" onclick="setMood('🤩','Stoked')">🤩</button>
+          <button class="mb" onclick="setMood('😊','Happy')">😊</button>
+          <button class="mb" onclick="setMood('😌','Chill')">😌</button>
+          <button class="mb" onclick="setMood('😴','Tired')">😴</button>
+          <button class="mb" onclick="setMood('🤔','Thinking')">🤔</button>
+          <button class="mb" onclick="setMood('🥺','Low')">🥺</button>
+        </div>
+      </div>
+      <!-- ROAD STATS -->
+      <div class="card" style="background:linear-gradient(135deg,rgba(224,122,63,.06),rgba(37,27,13,.8));border-color:rgba(240,180,76,.2)">
+        <div class="ct">ROAD STATS</div>
+        <div class="sg sg4" style="margin-bottom:0">
+          <div class="st"><div class="lbl">Days on road</div><div class="val" id="h-days" style="font-size:24px">0</div></div>
+          <div class="st"><div class="lbl">Spots found</div><div class="val" id="h-spots-cnt" style="font-size:24px">0</div></div>
+          <div class="st"><div class="lbl">Places</div><div class="val" id="h-places-cnt" style="font-size:24px">0</div></div>
+          <div class="st"><div class="lbl">Score</div><div class="val" id="h-score" style="font-size:24px;color:var(--amber)">0</div></div>
+        </div>
+      </div>
+      <!-- VAN NEEDS ALERT -->
+      <div id="h-van-needs-home"></div>
     </div>
-    <div class="mood-g">
-      <button class="mb" onclick="setMood('🤩','Stoked')">🤩</button>
-      <button class="mb" onclick="setMood('😊','Happy')">😊</button>
-      <button class="mb" onclick="setMood('😌','Chill')">😌</button>
-      <button class="mb" onclick="setMood('😴','Tired')">😴</button>
-      <button class="mb" onclick="setMood('🤔','Thinking')">🤔</button>
-      <button class="mb" onclick="setMood('🥺','Low')">🥺</button>
+    <div>
+      <div class="qbox"><div class="qt" id="h-q"></div><div class="qa" id="h-qa"></div></div>
+      <!-- TODAY'S EXPENSES -->
+      <div class="card"><div class="ct">TODAY'S EXPENSES</div><div id="h-exp" class="collapsible-body"><div style="color:var(--muted)">Nothing logged today.</div></div></div>
+      <!-- ROAD FAMILY -->
+      <div class="card teal" style="padding-bottom:14px">
+        <div class="ch"><div class="ct">ROAD FAMILY</div><button class="bg bsm" onclick="ST('moments',document.querySelectorAll('.nb')[16])">View all</button></div>
+        <div id="ig-list-h" class="collapsible-body"></div>
+        <div class="div" style="margin:10px 0"></div>
+        <div class="row">
+          <div class="field"><input type="text" id="ig-nm-h" placeholder="Name" style="margin:0"></div>
+          <div class="field"><input type="text" id="ig-hd-h" placeholder="@handle" style="margin:0"></div>
+          <button class="bg bsm" onclick="addIG_h()" style="margin-top:0">+</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="qbox"><div class="qt" id="h-q"></div><div class="qa" id="h-qa"></div></div>
-
-  <!-- ROAD STATS -->
-  <div class="card" style="background:linear-gradient(135deg,rgba(255,208,96,.06),rgba(255,107,53,.04));border-color:rgba(255,208,96,.2)">
-    <div class="ct">ROAD STATS</div>
-    <div class="sg sg4" style="margin-bottom:0">
-      <div class="st"><div class="lbl">Days on road</div><div class="val" id="h-days" style="font-size:24px">0</div></div>
-      <div class="st"><div class="lbl">Spots found</div><div class="val" id="h-spots-cnt" style="font-size:24px">0</div></div>
-      <div class="st"><div class="lbl">Places</div><div class="val" id="h-places-cnt" style="font-size:24px">0</div></div>
-      <div class="st"><div class="lbl">Score</div><div class="val" id="h-score" style="font-size:24px;color:var(--gold)">0</div></div>
-    </div>
-  </div>
-
-  <!-- TODAY'S EXPENSES -->
-  <div class="card"><div class="ct">TODAY'S EXPENSES</div><div id="h-exp"><div style="color:var(--muted)">Nothing logged today.</div></div></div>
-
-  <!-- ROAD FAMILY -->
-  <div class="card teal" style="padding-bottom:14px">
-    <div class="ch"><div class="ct">ROAD FAMILY</div><button class="bg bsm" onclick="ST('moments',document.querySelectorAll('.nb')[16])">View all</button></div>
-    <div id="ig-list-h"></div>
-    <div class="div" style="margin:10px 0"></div>
-    <div class="row">
-      <div class="field"><input type="text" id="ig-nm-h" placeholder="Name" style="margin:0"></div>
-      <div class="field"><input type="text" id="ig-hd-h" placeholder="@handle" style="margin:0"></div>
-      <button class="bg bsm" onclick="addIG_h()" style="margin-top:0">+</button>
-    </div>
-  </div>
-
-  <!-- VAN NEEDS ALERT on home -->
-  <div id="h-van-needs-home"></div>
 
   <!-- SHARE NOMAD -->
-  <div class="card" style="text-align:center;border-color:rgba(255,208,96,.2);background:linear-gradient(135deg,rgba(255,208,96,.05),rgba(255,107,53,.03))">
-    <div style="font-family:var(--ff-d);font-size:24px;letter-spacing:.1em;color:var(--gold);margin-bottom:6px">LOVE NOMAD?</div>
-    <div style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:14px;line-height:1.6">Share it with the van life community.<br>Help fund travel by spreading the word 🤙</div>
+  <div class="card" style="text-align:center;border-color:rgba(240,180,76,.18);background:linear-gradient(135deg,rgba(224,122,63,.07),rgba(37,27,13,.8))">
+    <div style="font-family:var(--ffd);font-size:22px;letter-spacing:.1em;color:var(--amber);margin-bottom:6px">LOVE NOMAD?</div>
+    <div style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:14px;line-height:1.6">Share it with the van life community. Help fund travel by spreading the word 🤙</div>
     <button class="btn" onclick="shareNomad()" style="max-width:240px;margin:0 auto">📤 Share NOMAD</button>
   </div>
 
@@ -1378,6 +2384,7 @@ textarea{resize:vertical;min-height:80px}
 <!-- ═══ SOUL ═══ -->
 <div id="tab-soul" class="tab">
   <div class="ph"><h1>✨ SOUL</h1><p>The most important journey is inward</p></div>
+  <div id="fm-container" style="margin-bottom:14px"></div>
   <div class="card" style="text-align:center"><div class="ct">ADVENTURE SCORE</div><div class="score-ring" style="margin:8px auto 12px"><div class="sn" id="adv-sc">0</div><div class="sl2">Points</div></div><div style="font-family:var(--ff-d);font-size:20px;color:var(--gold);letter-spacing:.07em" id="adv-rank">Start logging!</div><div style="font-size:12px;color:var(--muted2);margin-top:8px;font-weight:500">Spots +10 · Places +15 · Moments +5 · Diary +3 · People +3</div></div>
   <div class="card purple"><div class="ct">DAILY WISDOM</div><p class="wis" id="soul-wis"></p><div class="wis-attr" id="soul-attr"></div></div>
   <div class="card"><div class="ct">GRATITUDE</div><div style="font-size:16px;font-style:italic;font-weight:500;color:var(--gold);margin-bottom:12px" id="grat-p">What made today worth living?</div><input type="text" id="g-1" placeholder="I'm grateful for..."><input type="text" id="g-2" placeholder="Something beautiful I noticed..."><input type="text" id="g-3" placeholder="One person who mattered today..."><button class="btn" onclick="saveGrat()">Save ✨</button><div id="grat-hist" style="margin-top:12px"></div></div>
@@ -1386,6 +2393,7 @@ textarea{resize:vertical;min-height:80px}
 </div>
 
 <script>
+
 // ══════════════════════════════════════════
 // CORE UTILS
 // ══════════════════════════════════════════
@@ -2057,6 +3065,12 @@ function rSL(){const l=get('sl5')||[];const el=$('sl-log');if(!el)return;el.inne
 // INIT
 // ══════════════════════════════════════════
 window.addEventListener('load',()=>{
+// Rebuild meal grid on resize (mobile ↔ desktop)
+let _resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(()=>{ if($('fp-grid'))rFPGrid(); },200);
+});
 
 // ── HERO BACKGROUND — use uploaded GitHub assets ──
 const HERO_BACKGROUNDS = [
@@ -2284,7 +3298,25 @@ function calcFPBudget(){
 }
 function rFPGrid(){
   const plan=get('fp_plan5')||{};const el=$('fp-grid');if(!el)return;
-  el.innerHTML=DAYS7.map((d,di)=>`<div class="fp-day"><div class="fp-day-title">${d}</div>${MEAL_KEYS.map((mk,mi)=>`<div class="fp-meal-row"><div class="fp-meal-label">${['BRK','LCH','DIN'][mi]}</div><input class="fp-meal-input" type="text" id="${fp_id(di,mk)}" value="${plan[di+mk]||''}" placeholder="${['Breakfast...','Lunch...','Dinner...'][mi]}" oninput="saveFP()"></div>`).join('')}</div>`).join('');
+  el.innerHTML = (() => {
+    const isMobile = window.innerWidth < 768;
+    if(isMobile){
+      // Mobile: stacked days
+      return DAYS7.map((d,di)=>`<div class="fp-day"><div class="fp-day-title">${d}</div>${MEAL_KEYS.map((mk,mi)=>`<div class="fp-meal-row"><div class="fp-meal-label">${['BRK','LCH','DIN'][mi]}</div><input class="fp-meal-input" type="text" id="${fp_id(di,mk)}" value="${plan[di+mk]||''}" placeholder="${['Breakfast...','Lunch...','Dinner...'][mi]}" oninput="saveFP()"></div>`).join('')}</div>`).join('');
+    } else {
+      // Desktop: compact week grid
+      const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      const meals = [['BRK','Breakfast...'],['LCH','Lunch...'],['DIN','Dinner...']];
+      return `<div class="fp-week-grid">
+        <div class="fp-wg-header"></div>
+        ${days.map(d=>`<div class="fp-wg-header">${d}</div>`).join('')}
+        ${meals.map(([lbl,ph],mi)=>`
+          <div class="fp-wg-label ${mi===2?'fp-wg-row-last':''}">${lbl}</div>
+          ${DAYS7.map((_,di)=>`<div class="fp-wg-cell ${mi===2?'fp-wg-row-last':''}"><input class="fp-wg-input" type="text" id="${fp_id(di,MEAL_KEYS[mi])}" value="${plan[di+MEAL_KEYS[mi]]||''}" placeholder="${ph}" oninput="saveFP()"></div>`).join('')}
+        `).join('')}
+      </div>`;
+    }
+  })();
   const b=get('fp_budget5')||0;if($('fp-budget'))$('fp-budget').value=b||'';
   calcFPBudget();
 }
@@ -2639,8 +3671,539 @@ function rIncome(){
   const el=$('inc-hist');if(!el)return;
   el.innerHTML=l.length?l.slice(0,10).map(i=>`<div class="inc-row"><div><div style="font-weight:700">${INC_CAT[i.cat]||i.cat}${i.from?' — '+i.from:''}</div><div class="sub">${i.d}</div></div><div style="font-family:var(--ff-d);font-size:22px;color:var(--green);letter-spacing:.04em">${f$(i.amount)}</div></div>`).join(''):'<div style="color:var(--muted)">No income logged yet.</div>';
 }
-</script>
-</body>
-</html>
 
+
+// ════════════════════════════════════════════════════════════
+// NOMAD v11 — PREMIUM EXPERIENCE ENGINE
+// ════════════════════════════════════════════════════════════
+
+// ── ENVIRONMENT SYSTEM (time-aware) ──
+(function initEnvironment(){
+  const h = new Date().getHours();
+  let env = 'day';
+  if(h >= 5 && h < 8)  env = 'dawn';
+  if(h >= 18 && h < 20) env = 'golden';
+  if(h >= 20 || h < 5)  env = 'night';
+
+  const overlay = document.createElement('div');
+  overlay.className = `env-overlay env-${env}`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.classList.add('env-active'));
+
+  // Night mode: activate stars
+  if(env === 'night' || env === 'dawn'){
+    document.body.classList.add('is-night');
+  }
+  window._nomadEnv = env;
+})();
+
+// ── PARTICLE SYSTEM ──
+(function initParticles(){
+  const cols = ['rgba(224,122,63,.55)','rgba(240,180,76,.55)','rgba(78,163,154,.45)','rgba(200,160,80,.45)'];
+  function spawnParticle(){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random()*3+1;
+    const dur = Math.random()*20+14;
+    const delay = Math.random()*6;
+    const drift = (Math.random()-0.5)*120;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}vw;background:${cols[Math.floor(Math.random()*cols.length)]};box-shadow:0 0 ${size*4}px ${cols[0]};animation-duration:${dur}s;animation-delay:${delay}s;--drift:${drift}px`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), (dur+delay)*1000+1000);
+  }
+  for(let i=0;i<5;i++) setTimeout(()=>spawnParticle(), i*600);
+  setInterval(spawnParticle, 2500);
+})();
+
+// ── STAR FIELD IN HERO ──
+(function initHeroStars(){
+  const hero = document.querySelector('.hero-wrap');
+  if(!hero) return;
+  const sf = document.createElement('div');
+  sf.className = 'star-field';
+  for(let i=0;i<45;i++){
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random()<0.15 ? 3 : Math.random()<0.3 ? 2 : 1.5;
+    const dur = Math.random()*4+2;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*55}%;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s`;
+    sf.appendChild(s);
+  }
+  // Shooting star
+  const ss = document.createElement('div');
+  ss.className = 'shooting-star';
+  ss.style.cssText = `top:${15+Math.random()*20}%;left:${Math.random()*40}%;animation-delay:${3+Math.random()*8}s`;
+  sf.appendChild(ss);
+  hero.insertBefore(sf, hero.firstChild);
+
+  // Sun rays
+  const sr = document.createElement('div');
+  sr.className = 'sun-rays';
+  for(let i=0;i<12;i++){
+    const ray = document.createElement('div');
+    ray.className = 'sun-ray';
+    const h = 40+Math.random()*60;
+    const angle = (i/12)*360;
+    ray.style.cssText = `height:${h}px;transform:rotate(${angle}deg) translateX(-50%);animation-delay:${i*0.3}s;opacity:${0.3+Math.random()*0.4}`;
+    sr.appendChild(ray);
+  }
+  hero.appendChild(sr);
+})();
+
+// ── CLOUD SYSTEM ──
+(function initClouds(){
+  const hero = document.querySelector('.hero-wrap');
+  if(!hero) return;
+  [{w:130,h:28,t:'12%',dur:50,delay:0},{w:90,h:22,t:'22%',dur:65,delay:10},{w:170,h:35,t:'8%',dur:58,delay:25},{w:100,h:26,t:'30%',dur:44,delay:14}].forEach(c=>{
+    const cl = document.createElement('div');
+    cl.className = 'cloud';
+    cl.style.cssText = `width:${c.w}px;height:${c.h}px;top:${c.t};animation-duration:${c.dur}s;animation-delay:${c.delay}s;opacity:.07;z-index:1`;
+    hero.appendChild(cl);
+  });
+})();
+
+// ── RIPPLE EFFECT ──
+document.addEventListener('click', e=>{
+  const btn = e.target.closest('.btn,.qa-btn,.mb,.hstat-card,.cf-btn-sound');
+  if(!btn) return;
+  const r = document.createElement('span');
+  r.className = 'ripple';
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+  btn.appendChild(r);
+  setTimeout(()=>r.remove(), 700);
+});
+
+// ── SCROLL REVEAL ──
+(function initReveal(){
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('revealed'); io.unobserve(e.target); }});
+  }, {threshold:.08, rootMargin:'0px 0px -20px 0px'});
+
+  function observe(){
+    document.querySelectorAll('.card,.goal-card,.vn-card,.rt-card,.comm-spot,.comm-card,.fm-card,.journey-card').forEach((el,i)=>{
+      if(!el.classList.contains('reveal')){
+        el.classList.add('reveal');
+        el.style.transitionDelay = Math.min(i*0.055, 0.35)+'s';
+      }
+      io.observe(el);
+    });
+  }
+  observe();
+  document.addEventListener('tabChanged', ()=>setTimeout(observe,100));
+  setInterval(observe, 1800);
+})();
+
+// ── WRAP ST FOR TAB EVENTS ──
+if(typeof ST !== 'undefined'){
+  const _ST = ST;
+  ST = function(id, btn){
+    _ST(id, btn);
+    document.dispatchEvent(new Event('tabChanged'));
+    // Animate progress bars
+    setTimeout(()=>{
+      document.querySelectorAll('.pw .pb').forEach(b=>{
+        const w=b.style.width; b.style.width='0%';
+        setTimeout(()=>{b.style.width=w;}, 60);
+      });
+    }, 60);
+  };
+}
+
+// ── HAPTIC TOUCH STATES ──
+document.addEventListener('touchstart', e=>{
+  e.target.closest('.card,.qa-btn,.hstat-card,.mb')?.style && (e.target.closest('.card,.qa-btn,.hstat-card,.mb').style.transform='scale(.97)');
+},{passive:true});
+document.addEventListener('touchend', e=>{
+  const el = e.target.closest('.card,.qa-btn,.hstat-card,.mb');
+  if(el) setTimeout(()=>el.style.transform='',160);
+},{passive:true});
+
+// ── PARALLAX HERO ──
+window.addEventListener('scroll', ()=>{
+  const sy = window.scrollY;
+  const bg = document.getElementById('heroBg');
+  if(bg) bg.style.transform = `scale(1.05) translateY(${sy*0.22}px)`;
+  const van = document.querySelector('.van-svg');
+  if(van) van.style.transform = `translateX(calc(-50% + ${Math.sin(Date.now()/800)*2}px)) translateY(${-sy*0.1}px)`;
+},{passive:true});
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  const nbs = document.querySelectorAll('.nb');
+  if(e.key==='h'||e.key==='H') nbs[0]?.click();
+  if(e.key==='c'||e.key==='C') openCampfire();
+  if(e.key==='j'||e.key==='J') openJourney();
+  if(e.key==='Escape'){ closeCampfire(); closeJourney(); }
+  const map={'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':9};
+  if(map[e.key]!==undefined && nbs[map[e.key]]) nbs[map[e.key]].click();
+});
+
+// ── SMOOTH COUNTER ──
+function animNum(el, to, ms=900){
+  if(!el) return;
+  const from = 0, start = Date.now();
+  const pf = el.textContent.includes('$')?'$':'';
+  const sf = el.dataset.suffix||'';
+  (function step(){
+    const p = Math.min((Date.now()-start)/ms,1);
+    const ease = 1-Math.pow(1-p,3);
+    el.textContent = pf+Math.round(from+(to-from)*ease)+sf;
+    if(p<1) requestAnimationFrame(step);
+  })();
+}
+window._animNum = animNum;
+
+// ═══════════════════════════════════════════════════════════
+// CAMPFIRE MODE
+// ═══════════════════════════════════════════════════════════
+
+function buildCampfire(){
+  if(document.getElementById('campfireOverlay')) return;
+  const o = document.createElement('div');
+  o.className = 'campfire-overlay';
+  o.id = 'campfireOverlay';
+  o.innerHTML = `
+    <div class="cf-sky"></div>
+    <!-- Stars -->
+    <div class="cf-stars" id="cfStars"></div>
+    <!-- Moon -->
+    <div class="cf-moon"></div>
+    <!-- Ground glow -->
+    <div class="cf-ground"></div>
+    <div class="cf-glow"></div>
+    <!-- Fire SVG -->
+    <div class="cf-fire-wrap">
+      <svg width="140" height="160" viewBox="0 0 140 160">
+        <!-- Logs -->
+        <ellipse cx="70" cy="148" rx="55" ry="10" fill="#2a1808" opacity=".8"/>
+        <rect x="18" y="138" width="104" height="14" rx="7" fill="#3a2010"/>
+        <rect x="30" y="135" width="80" height="12" rx="6" fill="#4a2a14" transform="rotate(-8,70,141)"/>
+        <rect x="30" y="135" width="80" height="12" rx="6" fill="#3a2010" transform="rotate(8,70,141)"/>
+        <!-- Inner flame -->
+        <path class="cf-flame cf-flame-3" fill="url(#f3)" d="M70,20 C55,40 45,55 50,80 C54,95 62,100 70,100 C78,100 86,95 90,80 C95,55 85,40 70,20Z" opacity=".9"/>
+        <!-- Main flame -->
+        <path class="cf-flame cf-flame-2" fill="url(#f2)" d="M70,10 C48,38 35,60 42,90 C48,112 60,120 70,120 C80,120 92,112 98,90 C105,60 92,38 70,10Z"/>
+        <!-- Outer flame -->
+        <path class="cf-flame cf-flame-1" fill="url(#f1)" d="M70,0 C40,35 25,65 34,98 C42,122 56,132 70,132 C84,132 98,122 106,98 C115,65 100,35 70,0Z"/>
+        <!-- Ember glow -->
+        <ellipse cx="70" cy="130" rx="30" ry="8" fill="#ff8020" opacity=".4"/>
+        <defs>
+          <radialGradient id="f1" cx="50%" cy="70%">
+            <stop offset="0%" stop-color="#ff6020"/>
+            <stop offset="50%" stop-color="#ff4010" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#cc2000" stop-opacity=".4"/>
+          </radialGradient>
+          <radialGradient id="f2" cx="50%" cy="60%">
+            <stop offset="0%" stop-color="#ffaa30"/>
+            <stop offset="50%" stop-color="#ff7020" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="#ff4010" stop-opacity=".3"/>
+          </radialGradient>
+          <radialGradient id="f3" cx="50%" cy="50%">
+            <stop offset="0%" stop-color="#fff8e0"/>
+            <stop offset="40%" stop-color="#ffdd60" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#ffaa30" stop-opacity=".4"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+    <!-- Embers container -->
+    <div id="cfEmbers" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div>
+    <!-- Close -->
+    <button class="cf-close" onclick="closeCampfire()">✕</button>
+    <!-- UI -->
+    <div class="cf-ui">
+      <div class="cf-title">🔥 CAMPFIRE</div>
+      <div class="cf-sub">tonight's vibe</div>
+      <div class="cf-controls">
+        <button class="cf-btn-sound" id="cfBtnCampfire" onclick="toggleCfSound('campfire')">🔥 Campfire</button>
+        <button class="cf-btn-sound" id="cfBtnRain" onclick="toggleCfSound('rain')">🌧️ Rain</button>
+        <button class="cf-btn-sound" id="cfBtnOcean" onclick="toggleCfSound('ocean')">🌊 Ocean</button>
+        <button class="cf-btn-sound" id="cfBtnForest" onclick="toggleCfSound('forest')">🌲 Forest</button>
+      </div>
+      <div class="cf-note">Press Escape to leave · C to open</div>
+    </div>
+  `;
+  document.body.appendChild(o);
+
+  // Build stars
+  const cfStars = document.getElementById('cfStars');
+  for(let i=0;i<80;i++){
+    const s = document.createElement('div');
+    s.className = 'cf-star';
+    const size = Math.random()<0.1?3:Math.random()<0.3?2:1;
+    const dur = Math.random()*4+2;
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*75}%;animation-duration:${dur}s;animation-delay:${Math.random()*dur}s`;
+    cfStars.appendChild(s);
+  }
+
+  // Spawn embers loop
+  function spawnCfEmber(){
+    const e = document.createElement('div');
+    e.className = 'cf-ember';
+    const size = Math.random()*3+1;
+    const dur = Math.random()*4+3;
+    const dx = (Math.random()-0.5)*120;
+    e.style.cssText = `width:${size}px;height:${size}px;bottom:${28+Math.random()*8}%;left:calc(50% + ${(Math.random()-0.5)*40}px);animation-duration:${dur}s;--dx:${dx}px`;
+    document.getElementById('cfEmbers')?.appendChild(e);
+    setTimeout(()=>e.remove(), dur*1000+500);
+  }
+  window._cfEmberInterval = setInterval(spawnCfEmber, 300);
+  for(let i=0;i<8;i++) setTimeout(spawnCfEmber, i*200);
+}
+
+function openCampfire(){
+  buildCampfire();
+  const o = document.getElementById('campfireOverlay');
+  if(o) {
+    o.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeCampfire(){
+  const o = document.getElementById('campfireOverlay');
+  if(o) {
+    o.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  if(window._cfEmberInterval) clearInterval(window._cfEmberInterval);
+}
+
+// Simple campfire audio using Web Audio API (no external files needed)
+const _cfAudioCtx = { ctx: null };
+function getCfAudio(){
+  if(!_cfAudioCtx.ctx){
+    _cfAudioCtx.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return _cfAudioCtx.ctx;
+}
+
+function makeCrackleSFX(ctx){
+  // Brown noise campfire approximation
+  const buf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  let lastOut = 0;
+  for(let i=0;i<data.length;i++){
+    const white = Math.random()*2-1;
+    data[i] = (lastOut + (.02*white))/1.02;
+    lastOut = data[i];
+    data[i] *= 3.5;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass'; filter.frequency.value = 400; filter.Q.value = 0.5;
+  const gain = ctx.createGain(); gain.gain.value = 0.18;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.start();
+  return { node: src, gain };
+}
+
+window._cfSounds = {};
+function toggleCfSound(type){
+  const btn = document.getElementById(`cfBtn${type.charAt(0).toUpperCase()+type.slice(1)}`);
+  if(window._cfSounds[type]){
+    window._cfSounds[type].gain.gain.setTargetAtTime(0, getCfAudio().currentTime, 0.3);
+    setTimeout(()=>{ try{window._cfSounds[type].node.stop();}catch(e){} delete window._cfSounds[type]; }, 500);
+    btn?.classList.remove('playing');
+  } else {
+    const ctx = getCfAudio();
+    window._cfSounds[type] = makeCrackleSFX(ctx);
+    btn?.classList.add('playing');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// JOURNEY MODE
+// ═══════════════════════════════════════════════════════════
+
+function buildJourney(){
+  if(document.getElementById('journeyOverlay')) return;
+  const o = document.createElement('div');
+  o.className = 'journey-overlay';
+  o.id = 'journeyOverlay';
+  o.innerHTML = `
+    <div class="journey-bg"></div>
+    <div class="journey-bg-img" id="journeyBgImg"></div>
+    <div class="journey-overlay-grad"></div>
+    <button class="journey-close" onclick="closeJourney()">✕</button>
+    <div class="journey-content">
+      <div class="journey-eyebrow" id="jEye">JOURNEY MODE · NOMAD</div>
+      <div class="journey-heading" id="jHead">Tonight's Drive</div>
+      <div class="journey-sub" id="jSub">your van life OS</div>
+      <div class="journey-cards" id="jCards"></div>
+    </div>
+  `;
+  document.body.appendChild(o);
+}
+
+function openJourney(){
+  buildJourney();
+  // Try to load a background from uploaded assets
+  const imgs = [
+    'scene-campfire.jpg','scene-sunset.jpg','scene-forest.jpg',
+    'a_high_detail_dark_theme_brand_asset_pack_poster.png'
+  ];
+  const bgEl = document.getElementById('journeyBgImg');
+  if(bgEl){
+    const img = new Image();
+    img.onload = ()=>{ bgEl.style.backgroundImage = `url('${img.src}')`; };
+    img.src = imgs[Math.floor(Math.random()*imgs.length)];
+  }
+
+  // Populate with real data from the app
+  const h = new Date().getHours();
+  const env = window._nomadEnv || 'day';
+  const headings = {
+    dawn:   ['First Light',  'The world wakes with you.'],
+    day:    ['On The Move',  'Every road leads somewhere worth going.'],
+    golden: ['Golden Hour',  'The best moments never last long enough.'],
+    night:  ['Settling In',  'The stars know the way.'],
+  };
+  const [head, sub] = headings[env] || headings.day;
+  document.getElementById('jHead').textContent = head;
+  document.getElementById('jSub').textContent = sub;
+
+  // Build journey cards from stored data
+  const cards = [];
+  const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  if(bs.vanName) cards.push({ icon:'🚐', label:'HOME', value: bs.vanName, sub:'rolling along' });
+
+  const pwr = localStorage.getItem('nm5_power');
+  if(pwr) cards.push({ icon:'⚡', label:'POWER', value: pwr+'%', sub: pwr > 50 ? 'healthy charge' : 'charge needed' });
+
+  const fuel = localStorage.getItem('nm5_fuel');
+  if(fuel) cards.push({ icon:'⛽', label:'RANGE', value: fuel+'km', sub: 'estimated range' });
+
+  const wxStr = localStorage.getItem('wx_last');
+  if(wxStr){
+    try{
+      const wx = JSON.parse(wxStr);
+      if(wx.temp) cards.push({ icon: wx.icon||'🌤️', label:'CONDITIONS', value: Math.round(wx.temp)+'°', sub: wx.desc||'current weather' });
+    }catch(e){}
+  }
+
+  const goals = JSON.parse(localStorage.getItem('nm5_goals')||'[]');
+  const activeGoal = goals.find(g=>!g.done);
+  if(activeGoal) cards.push({ icon:'🎯', label:'NEXT GOAL', value: activeGoal.title.substring(0,22), sub: activeGoal.progress+'% progress' });
+
+  const spots = JSON.parse(localStorage.getItem('nm5_spots')||'[]');
+  if(spots.length) cards.push({ icon:'📍', label:'SPOTS FOUND', value: spots.length+'', sub: 'campsites logged' });
+
+  // Always add a few inspiring cards
+  const inspired = [
+    {icon:'🌅',label:'TODAY',value:new Date().toLocaleDateString('en-AU',{weekday:'long'}),sub:'another chapter'},
+    {icon:'🧭',label:'DIRECTION',value:'Forward',sub:'always moving'},
+    {icon:'🌙',label:'TONIGHT',value:'Sky is clear',sub:'good night ahead'},
+  ];
+  cards.push(...inspired.slice(0, Math.max(0, 4-cards.length)));
+
+  document.getElementById('jCards').innerHTML = cards.slice(0,5).map(c=>`
+    <div class="journey-card">
+      <div class="jc-icon">${c.icon}</div>
+      <div>
+        <div class="jc-label">${c.label}</div>
+        <div class="jc-value">${c.value}</div>
+        <div class="jc-sub">${c.sub}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const o = document.getElementById('journeyOverlay');
+  if(o){ o.classList.add('active'); document.body.style.overflow='hidden'; }
+}
+
+function closeJourney(){
+  const o = document.getElementById('journeyOverlay');
+  if(o){ o.classList.remove('active'); document.body.style.overflow=''; }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FREEDOM METRICS — build into Soul tab
+// ═══════════════════════════════════════════════════════════
+
+function buildFreedomMetrics(){
+  const container = document.getElementById('fm-container');
+  if(!container) return;
+
+  // Calculate real metrics from stored data
+  const bs   = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  const spots = JSON.parse(localStorage.getItem('nm5_spots')||'[]');
+  const goals = JSON.parse(localStorage.getItem('nm5_goals')||'[]');
+  const diary = JSON.parse(localStorage.getItem('nm5_diary5')||'[]');
+  const moments = JSON.parse(localStorage.getItem('nm5_moments')||'[]');
+
+  const startDate = bs.startDate ? new Date(bs.startDate) : null;
+  const daysOnRoad = startDate ? Math.floor((Date.now()-startDate.getTime())/(86400000)) : 0;
+  const goalsHit = goals.filter(g=>g.done).length;
+
+  const metrics = [
+    { icon:'🌅', label:'NIGHTS ON ROAD',    value: daysOnRoad },
+    { icon:'📍', label:'SPOTS FOUND',       value: spots.length },
+    { icon:'📖', label:'JOURNAL ENTRIES',   value: diary.length },
+    { icon:'🎯', label:'GOALS CRUSHED',     value: goalsHit },
+    { icon:'📸', label:'MOMENTS CAPTURED',  value: moments.length },
+    { icon:'🏕️', label:'CAMPS LOGGED',      value: spots.filter(s=>s.rating>=4).length },
+    { icon:'🤝', label:'ROAD FAMILY',       value: (JSON.parse(localStorage.getItem('nm5_ig')||'[]')).length },
+    { icon:'☀️', label:'DAYS OFFGRID',      value: Math.max(0, daysOnRoad - 3) },
+  ];
+
+  container.innerHTML = `
+    <div class="fm-banner">
+      <div class="fm-tagline">living free since day one</div>
+      <div class="fm-days">${daysOnRoad}</div>
+      <div class="fm-days-label">Days on the Road</div>
+    </div>
+    <div class="fm-grid">
+      ${metrics.map(m=>`
+        <div class="fm-card reveal">
+          <div class="fm-icon">${m.icon}</div>
+          <div class="fm-value">${m.value}</div>
+          <div class="fm-label">${m.label}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Run freedom metrics when soul tab opens
+document.addEventListener('tabChanged', ()=>{
+  if(document.getElementById('tab-soul')?.classList.contains('active')){
+    buildFreedomMetrics();
+  }
+});
+
+// ── HERO BACKGROUND LOADER ──
+(function loadHeroBg(){
+  const el = document.getElementById('heroBg');
+  if(!el) return;
+  const attempts = [
+    'a_high_detail_dark_theme_brand_asset_pack_poster.png',
+    'a_comprehensive_brand_asset_pack_for_the_nomad_va.png',
+    'scene-campfire.jpg', 'scene-sunset.jpg', 'hero-bg.jpg'
+  ];
+  let loaded = false;
+  attempts.forEach((src,i)=>{
+    if(loaded) return;
+    const img = new Image();
+    img.onload = ()=>{
+      if(!loaded){
+        loaded = true;
+        el.style.backgroundImage = `url('${src}')`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center top';
+        el.style.opacity = '0.48';
+        el.classList.add('loaded');
+      }
+    };
+    setTimeout(()=>{ img.src = src; }, i*200);
+  });
+})();
+
+console.log('🚐 NOMAD v11 Premium Engine • Journey Mode • Campfire Mode • Freedom Metrics ✓');
+
+</script>
 </html>

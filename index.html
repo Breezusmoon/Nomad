@@ -3972,46 +3972,20 @@ function closeCampfire(){
   if(window._cfEmberInterval) clearInterval(window._cfEmberInterval);
 }
 
-// Simple campfire audio using Web Audio API (no external files needed)
-const _cfAudioCtx = { ctx: null };
-function getCfAudio(){
-  if(!_cfAudioCtx.ctx){
-    _cfAudioCtx.ctx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return _cfAudioCtx.ctx;
-}
-
-function makeCrackleSFX(ctx){
-  // Brown noise campfire approximation
-  const buf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
-  const data = buf.getChannelData(0);
-  let lastOut = 0;
-  for(let i=0;i<data.length;i++){
-    const white = Math.random()*2-1;
-    data[i] = (lastOut + (.02*white))/1.02;
-    lastOut = data[i];
-    data[i] *= 3.5;
-  }
-  const src = ctx.createBufferSource();
-  src.buffer = buf; src.loop = true;
-  const filter = ctx.createBiquadFilter();
-  filter.type = 'bandpass'; filter.frequency.value = 400; filter.Q.value = 0.5;
-  const gain = ctx.createGain(); gain.gain.value = 0.18;
-  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-  src.start();
-  return { node: src, gain };
-}
-
+// Sound buttons — visual only (real audio needs hosted .mp3 files)
 window._cfSounds = {};
 function toggleCfSound(type){
   const btn = document.getElementById(`cfBtn${type.charAt(0).toUpperCase()+type.slice(1)}`);
   if(window._cfSounds[type]){
-    window._cfSounds[type].gain.gain.setTargetAtTime(0, getCfAudio().currentTime, 0.3);
-    setTimeout(()=>{ try{window._cfSounds[type].node.stop();}catch(e){} delete window._cfSounds[type]; }, 500);
+    delete window._cfSounds[type];
     btn?.classList.remove('playing');
   } else {
-    const ctx = getCfAudio();
-    window._cfSounds[type] = makeCrackleSFX(ctx);
+    // Toggle all off first
+    Object.keys(window._cfSounds).forEach(k=>{
+      delete window._cfSounds[k];
+      document.querySelector('.cf-btn-sound.playing')?.classList.remove('playing');
+    });
+    window._cfSounds[type] = true;
     btn?.classList.add('playing');
   }
 }

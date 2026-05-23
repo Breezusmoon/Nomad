@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="nomad-icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Dancing+Script:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════════
@@ -399,6 +400,44 @@ textarea{resize:vertical;min-height:80px}
 .stat-glow-green{color:var(--green)!important}.stat-glow-red{color:#ef9090!important}.stat-glow-gold{color:var(--amber)!important}
 
 /* ── SCROLLBAR ── */
+
+/* ── EVENTS SYSTEM ── */
+.event-card{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:18px;margin-bottom:12px;transition:all .28s cubic-bezier(.34,1.28,.64,1);position:relative;overflow:hidden}
+.event-card:hover{border-color:rgba(240,180,76,.22);transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.event-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0}
+.ev-meetup::before{background:linear-gradient(90deg,#4ea39a,#6abdb5)}
+.ev-party::before{background:linear-gradient(90deg,#e07a3f,#f0b44c)}
+.ev-surf::before{background:linear-gradient(90deg,#3060a0,#4ea39a)}
+.ev-camp::before{background:linear-gradient(90deg,#3f5d4b,#7f9060)}
+.ev-market::before{background:linear-gradient(90deg,#a84820,#e07a3f)}
+.ev-other::before{background:linear-gradient(90deg,#7868b0,#a898e0)}
+.ev-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:900;padding:3px 9px;border-radius:6px;letter-spacing:.06em;text-transform:uppercase;font-family:'Quicksand',sans-serif;margin-bottom:8px}
+.ev-meetup-badge{background:rgba(78,163,154,.15);color:var(--teal-hi);border:1px solid rgba(78,163,154,.3)}
+.ev-party-badge{background:rgba(240,180,76,.15);color:var(--amber);border:1px solid rgba(240,180,76,.3)}
+.ev-surf-badge{background:rgba(72,120,168,.15);color:#80a8d8;border:1px solid rgba(72,120,168,.3)}
+.ev-camp-badge{background:rgba(63,93,75,.18);color:var(--forest-hi);border:1px solid rgba(63,93,75,.3)}
+.ev-market-badge{background:rgba(168,72,32,.15);color:var(--orange-hi);border:1px solid rgba(168,72,32,.3)}
+.ev-other-badge{background:rgba(120,104,176,.15);color:#a898e0;border:1px solid rgba(120,104,176,.3)}
+.ev-title{font-family:'Fredoka',sans-serif;font-size:24px;font-weight:700;color:var(--cream);letter-spacing:.04em;margin-bottom:6px;line-height:1.1}
+.ev-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px;font-size:13px;font-weight:600;font-family:'Quicksand',sans-serif}
+.ev-meta-item{display:flex;align-items:center;gap:4px;color:var(--muted);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:3px 9px}
+.ev-desc{font-size:14px;color:var(--tan);font-weight:400;line-height:1.7;margin-bottom:12px}
+.ev-host{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ev-host-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--orange));display:flex;align-items:center;justify-content:center;font-size:14px;font-family:'Fredoka',sans-serif;font-weight:700;color:var(--cream);flex-shrink:0}
+.ev-host-name{font-size:13px;font-weight:700;color:var(--cream)}
+.ev-host-sub{font-size:11px;color:var(--muted);font-family:'Quicksand',sans-serif}
+.ev-contact{background:rgba(240,180,76,.08);border:1px solid rgba(240,180,76,.18);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--amber);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.ev-actions{display:flex;gap:10px;align-items:center}
+.ev-rsvp-btn{background:linear-gradient(160deg,var(--orange),#b05828);color:var(--cream);border:none;border-radius:999px;padding:10px 20px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:700;letter-spacing:.05em;cursor:pointer;transition:all .28s cubic-bezier(.34,1.28,.64,1);box-shadow:0 4px 18px rgba(168,72,32,.45)}
+.ev-rsvp-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(168,72,32,.6)}
+.ev-rsvp-btn.going{background:linear-gradient(160deg,var(--forest-hi),var(--forest-lo));box-shadow:0 4px 18px rgba(63,93,75,.45)}
+.ev-rsvp-count{font-family:'Fredoka',sans-serif;font-size:16px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px}
+.ev-countdown{font-family:'Fredoka',sans-serif;font-size:14px;font-weight:700;letter-spacing:.05em}
+.ev-past{opacity:.45;filter:grayscale(.3)}
+.ev-today{border-color:rgba(240,180,76,.4) !important;box-shadow:0 0 0 2px rgba(240,180,76,.12) !important}
+.cev-type-btn{transition:all .22s}
+.cev-type-btn.active{border-color:var(--orange);color:var(--orange-hi);background:rgba(224,122,63,.12)}
+
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(224,122,63,.28);border-radius:2px}
 
 /* ══════════════════════════════════════════════════════
@@ -1402,6 +1441,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 </style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 
@@ -1466,7 +1506,7 @@ input:focus, select:focus, textarea:focus {
   <button class="nb" onclick="ST('vanneeds',this)"><span class="ni">🔧</span>Van Needs</button>
   <button class="nb" onclick="ST('moon',this)"><span class="ni">🌙</span>Moon</button>
   <button class="nb" onclick="ST('power',this)"><span class="ni">⚡</span>Power</button>
-  <button class="nb" onclick="ST('res',this)"><span class="ni">💧</span>Water</button>
+  <button class="nb" onclick="ST('water',this)"><span class="ni">💧</span>Water</button>
   <button class="nb" onclick="ST('wheels',this)"><span class="ni">⛽</span>Wheels</button>
   <button class="nb" onclick="ST('budget',this)"><span class="ni">💰</span>Budget</button>
   <button class="nb" onclick="ST('data',this)"><span class="ni">📱</span>Data</button>
@@ -1480,6 +1520,7 @@ input:focus, select:focus, textarea:focus {
   <button class="nb" onclick="ST('emergency',this)"><span class="ni">🆘</span>Emergency</button>
   <button class="nb" onclick="ST('pack',this)"><span class="ni">🎒</span>Pack</button>
   <button class="nb" onclick="ST('soul',this)"><span class="ni">✨</span>Soul</button>
+  <button class="nb" onclick="ST('amenities',this)"><span class="ni">🚿</span>Amenities</button>
   <button class="nb campfire-nav-btn" onclick="openCampfire()"><span class="ni">🔥</span>Fire</button>
   <button class="nb" onclick="openJourney()"><span class="ni">🧭</span>Journey</button>
 </nav>
@@ -2000,111 +2041,193 @@ input:focus, select:focus, textarea:focus {
 
 <!-- ═══ COMMUNITY ═══ -->
 <div id="tab-community" class="tab">
-  <div class="ph"><h1>🌐 COMMUNITY</h1><p>The global NOMAD road family</p></div>
+  <div class="ph"><div class="ph-icon">🌐</div><h1>COMMUNITY</h1><p>The NOMAD road family — live</p></div>
 
-  <!-- Firebase setup -->
-  <div id="comm-setup-banner" style="display:none" class="comm-setup">
-    <h2>CONNECT TO THE COMMUNITY</h2>
-    <p style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:16px;line-height:1.6">Takes 5 minutes. Once set up, every NOMAD user shares one live community feed — spots, moments, builds and stories from the road.</p>
-    <div style="text-align:left;background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;color:var(--muted);line-height:1.8;font-weight:500">
-      <strong style="color:var(--gold);font-family:var(--ff-d);font-size:18px;letter-spacing:.06em">SETUP STEPS:</strong><br>
-      1. Go to <strong style="color:var(--text)">console.firebase.google.com</strong><br>
-      2. Create free account → <strong style="color:var(--text)">New project</strong> → name it "NOMAD"<br>
-      3. Click <strong style="color:var(--text)">Firestore Database</strong> → Start in test mode → Enable<br>
-      4. Go to <strong style="color:var(--text)">Project Settings</strong> → Add web app → Register app<br>
-      5. Copy the <strong style="color:var(--text)">firebaseConfig</strong> object and paste below
+  <!-- OFFLINE STATE — shows only if no Firebase baked in -->
+  <div id="comm-offline-msg" style="display:none">
+    <div class="card comm" style="text-align:center;padding:28px">
+      <div style="font-size:48px;margin-bottom:12px">🌐</div>
+      <div style="font-family:var(--ffd);font-size:24px;color:var(--orange-hi);margin-bottom:8px">Community coming soon</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.7">The live community is being set up.<br>Check back soon to connect with the road family.</div>
     </div>
-    <textarea id="fb-config-input" placeholder='Paste your firebaseConfig here. It looks like:&#10;{&#10;  apiKey: "AIza...",&#10;  authDomain: "your-project.firebaseapp.com",&#10;  projectId: "your-project-id",&#10;  ...&#10;}' style="min-height:140px;font-family:monospace;font-size:12px"></textarea>
-    <button class="btn btn-comm" onclick="connectFirebase()">🔥 Connect to Community</button>
-    <div id="fb-err" style="margin-top:8px;font-size:13px;font-weight:600;color:var(--red)"></div>
   </div>
 
-  <!-- Profile / alias -->
-  <div class="card comm" id="comm-profile" style="display:none">
-    <div class="ct">YOUR ROAD IDENTITY</div>
-    <div class="row" style="align-items:flex-end">
-      <div class="field"><label>Your road name (alias)</label><input type="text" id="user-alias" placeholder="SunChaser, VanMate, DustRoads..." maxlength="24"></div>
-      <button class="bg bsm" onclick="saveAlias()" style="margin-bottom:11px">Save</button>
-    </div>
-    <div style="font-size:13px;color:var(--muted);font-weight:500">You appear as: <span id="alias-preview" class="alias-badge">Anonymous</span> on all community posts</div>
-  </div>
+  <!-- MAIN COMMUNITY UI — shown when connected -->
+  <div id="comm-main" style="display:none">
 
-  <!-- Community tab bar -->
-  <div style="display:none" id="comm-tabs">
-    <div class="comm-filters" id="comm-tab-btns">
-      <button class="cf-btn active" onclick="showCommTab('spots',this)">📍 Spots</button>
+    <!-- WHO'S HERE card -->
+    <div class="card comm" id="comm-presence-card" style="margin-bottom:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="ct" style="margin-bottom:0;font-size:16px">🟢 ON THE ROAD NOW</div>
+        <div id="comm-online-count" style="font-family:var(--ffd);font-size:20px;color:var(--green);letter-spacing:.05em">–</div>
+      </div>
+      <div id="comm-presence-list" style="display:flex;flex-wrap:wrap;gap:7px;min-height:32px">
+        <div style="font-size:13px;color:var(--faint);font-family:var(--ffq)">Loading road family...</div>
+      </div>
+    </div>
+
+    <!-- YOUR ROAD NAME -->
+    <div class="card" style="margin-bottom:12px;padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="comm-my-avatar" style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--orange));display:flex;align-items:center;justify-content:center;font-family:var(--ffd);font-size:20px;color:var(--cream);font-weight:700;flex-shrink:0">?</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-family:var(--ffq);margin-bottom:4px">YOUR ROAD NAME</div>
+          <input type="text" id="comm-alias-input" placeholder="DustRoads, SunChaser, WaveRider..." style="margin:0;font-size:15px;padding:8px 12px" oninput="updateMyAlias()">
+        </div>
+        <button class="bg bsm" onclick="saveAndBroadcastAlias()" style="margin:0;flex-shrink:0">Save</button>
+      </div>
+      <div id="comm-alias-badge-wrap" style="margin-top:8px;display:none">
+        <span class="alias-badge" id="comm-alias-preview"></span>
+        <span id="comm-admin-badge" style="display:none;margin-left:6px;background:rgba(224,122,63,.2);border:1.5px solid rgba(224,122,63,.4);border-radius:8px;padding:3px 10px;font-size:10px;font-weight:900;color:var(--orange-hi);letter-spacing:.07em;font-family:var(--ffq)">⭐ ADMIN</span>
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <div class="comm-filters" id="comm-tab-btns" style="margin-bottom:14px">
+      <button class="cf-btn active" onclick="showCommTab('chat',this)">💬 Chat</button>
+      <button class="cf-btn" onclick="showCommTab('spots',this)">📍 Spots</button>
       <button class="cf-btn" onclick="showCommTab('moments',this)">🌊 Moments</button>
-      <button class="cf-btn" onclick="showCommTab('builds',this)">⚡ Builds</button>
-      <button class="cf-btn" onclick="showCommTab('board',this)">💬 Board</button>
+      <button class="cf-btn" onclick="showCommTab('events',this)">🎉 Events</button>
+      <button class="cf-btn" onclick="showCommTab('board',this)">📋 Board</button>
+      <button id="comm-admin-tab-btn" class="cf-btn" onclick="showCommTab('admin',this)" style="display:none;border-color:rgba(224,122,63,.3);color:var(--orange)">⭐ Admin</button>
     </div>
 
-    <!-- SPOTS FEED -->
-    <div id="comm-spots-panel">
+    <!-- CHAT PANEL -->
+    <div id="comm-chat-panel">
+      <div class="card comm" style="padding:0;overflow:hidden">
+        <!-- Chat messages -->
+        <div id="comm-chat-messages" style="height:380px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth">
+          <div style="text-align:center;padding:20px;color:var(--faint)">
+            <div style="font-size:32px;margin-bottom:8px">🔥</div>
+            <div style="font-family:var(--ffq);font-size:13px;font-weight:700">Start the conversation</div>
+          </div>
+        </div>
+        <!-- Chat input -->
+        <div style="border-top:1px solid rgba(255,255,255,.07);padding:12px;display:flex;gap:8px;align-items:flex-end">
+          <textarea id="comm-chat-input" placeholder="Say something to the road family..." style="margin:0;min-height:42px;max-height:100px;resize:none;flex:1;font-size:14px;padding:10px 12px" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMsg()}" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="btn" onclick="sendChatMsg()" style="width:auto;padding:10px 16px;font-size:16px;flex-shrink:0;border-radius:14px">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SPOTS PANEL -->
+    <div id="comm-spots-panel" style="display:none">
       <div class="card comm">
         <div class="ct">SHARE A SPOT</div>
-        <div class="row"><div class="field"><label>Spot name</label><input type="text" id="csp-name" placeholder="Byron Bay Beachfront..."></div><div class="field"><label>Location</label><input type="text" id="csp-loc" placeholder="NSW, Australia"></div></div>
-        <div class="row"><div class="field"><label>Type</label><select id="csp-type"><option>🏖 Beach</option><option>🏔 Mountain</option><option>🌲 Forest</option><option>🏜 Desert</option><option>🌊 Riverside</option><option>🏙 Urban</option><option>🌾 Farm</option></select></div><div class="field"><label>Rating</label><select id="csp-rating"><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3" selected>⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select></div></div>
-        <div class="row"><div class="field"><label>$/night (0 = free)</label><input type="number" id="csp-cost" placeholder="0" min="0" inputmode="decimal"></div><div class="field"><label>Signal</label><select id="csp-signal"><option>📶 Good 4G</option><option>📵 Weak</option><option>🚫 None</option></select></div></div>
-        <div class="row"><div class="field"><label>Fire allowed?</label><select id="csp-fire"><option value="y">🔥 Yes</option><option value="n">🚫 No</option><option value="r">🪨 Ring only</option></select></div><div class="field"><label>Water on site?</label><select id="csp-water"><option value="y">✅ Yes</option><option value="n">❌ No</option></select></div></div>
-        <textarea id="csp-notes" placeholder="The insider tip — how to get there, what makes it special, anything other nomads need to know..."></textarea>
-        <button class="btn btn-comm" onclick="postCommunitySpot()">🌐 Share with the community</button>
+        <div class="row"><div class="field"><label>Spot name</label><input type="text" id="csp-name" placeholder="Secret Beach, Valley Camp..."></div><div class="field" style="max-width:120px"><label>Rating</label><select id="csp-rating"><option>⭐⭐⭐⭐⭐</option><option>⭐⭐⭐⭐</option><option>⭐⭐⭐</option><option>⭐⭐</option></select></div></div>
+        <div class="row"><div class="field"><label>Location/area</label><input type="text" id="csp-loc" placeholder="Near Byron Bay, QLD..."></div><div class="field" style="max-width:100px"><label>Type</label><select id="csp-type"><option value="free">Free camp</option><option value="paid">Paid</option><option value="surf">Surf spot</option><option value="hike">Hike</option></select></div></div>
+        <div class="row">
+          <div class="field"><label>Signal</label><select id="csp-signal"><option value="full">Full bars</option><option value="ok">OK</option><option value="low">Low</option><option value="none">No signal</option></select></div>
+          <div class="field"><label>Fire</label><select id="csp-fire"><option value="y">Fires OK</option><option value="n">No fires</option></select></div>
+          <div class="field"><label>Water</label><select id="csp-water"><option value="y">Water nearby</option><option value="n">No water</option></select></div>
+        </div>
+        <textarea id="csp-notes" placeholder="What's the vibe? Any tips for the road family..." style="min-height:60px"></textarea>
+        <button class="btn btn-comm" onclick="logAndShareSpot()">📍 Share This Spot</button>
       </div>
-      <div class="comm-filters" id="spot-filters">
-        <button class="cf-btn active" onclick="filterSpots('all',this)">All</button>
-        <button class="cf-btn" onclick="filterSpots('🏖 Beach',this)">🏖 Beach</button>
-        <button class="cf-btn" onclick="filterSpots('🏔 Mountain',this)">🏔 Mountain</button>
-        <button class="cf-btn" onclick="filterSpots('🌲 Forest',this)">🌲 Forest</button>
-        <button class="cf-btn" onclick="filterSpots('free',this)">🆓 Free</button>
-      </div>
-      <div id="comm-spots-list"><div class="empty-comm"><div class="ei">📍</div><h3>NO SPOTS YET</h3><p>Be the first to share a campspot!</p></div></div>
+      <div class="ch"><div class="ct">COMMUNITY SPOTS</div><div id="csp-count" style="font-size:12px;color:var(--muted);font-family:var(--ffq)"></div></div>
+      <div id="comm-spots-list"></div>
     </div>
 
-    <!-- MOMENTS FEED -->
+    <!-- MOMENTS PANEL -->
     <div id="comm-moments-panel" style="display:none">
       <div class="card comm">
         <div class="ct">SHARE A MOMENT</div>
-        <div class="row"><div class="field"><label>Type</label><select id="cmm-type"><option>🎉 Experience</option><option>🦘 Wildlife</option><option>🌅 Sunrise/Sunset</option><option>🤝 Person met</option><option>🏄 Surf/Swim</option><option>🥾 Hike</option><option>🍜 Epic meal</option><option>✨ Other</option></select></div><div class="field"><label>Location</label><input type="text" id="cmm-loc" placeholder="Where?"></div></div>
-        <input type="text" id="cmm-title" placeholder="What happened? (the headline)">
-        <textarea id="cmm-story" placeholder="Tell the story... the detail, the feeling, why it matters. Road family wants to hear it."></textarea>
-        <button class="btn btn-comm" onclick="postCommunityMoment()">🌐 Share this moment</button>
+        <textarea id="cmom-txt" placeholder="Something worth sharing from the road..." style="min-height:70px"></textarea>
+        <div class="row">
+          <div class="field"><label>Location</label><input type="text" id="cmom-loc" placeholder="Where are you?"></div>
+          <div class="field" style="max-width:120px"><label>Tag</label><select id="cmom-tag"><option value="van">🚐 Van life</option><option value="surf">🌊 Surf</option><option value="nature">🌲 Nature</option><option value="food">🍳 Food</option><option value="sunset">🌅 Sunset</option><option value="star">⭐ Stargazing</option></select></div>
+        </div>
+        <button class="btn btn-comm" onclick="shareToMoments()">🌊 Share Moment</button>
       </div>
-      <div id="comm-moments-list"><div class="empty-comm"><div class="ei">🌊</div><h3>NO MOMENTS YET</h3><p>Share what the road has shown you</p></div></div>
+      <div class="ch"><div class="ct">COMMUNITY MOMENTS</div><div id="cmom-count" style="font-size:12px;color:var(--muted);font-family:var(--ffq)"></div></div>
+      <div id="comm-moments-list"></div>
     </div>
 
-    <!-- BUILDS FEED -->
-    <div id="comm-builds-panel" style="display:none">
-      <div class="card comm">
-        <div class="ct">SHARE YOUR BUILD</div>
-        <p style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:11px">Go to the ⚡ Power tab, configure your setup, then share the code here so others can see exactly what you're running.</p>
-        <input type="text" id="cbld-code" placeholder="Paste your NOMAD power share code here...">
-        <input type="text" id="cbld-van" placeholder="What's your van? (e.g. 2019 Transit Custom)">
-        <textarea id="cbld-notes" placeholder="Anything else about your build? Roof type, panel placement, battery location, lessons learned..."></textarea>
-        <button class="btn btn-comm" onclick="postCommunityBuild()">🌐 Share my build</button>
+    <!-- EVENTS PANEL (already built) -->
+    <div id="comm-events-panel" style="display:none">
+      <div class="card comm" id="comm-events-create">
+        <div class="ct">🎉 HOST AN EVENT</div>
+        <div class="row"><div class="field"><label>Event name</label><input type="text" id="cev-title" placeholder="Sunset beach hang, Free camp meetup..."></div></div>
+        <label>Type</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="cev-type-btns">
+          <button class="cf-btn cev-type-btn active" data-type="meetup" onclick="setCevType(this)">🤝 Meetup</button>
+          <button class="cf-btn cev-type-btn" data-type="party" onclick="setCevType(this)">🎉 Party</button>
+          <button class="cf-btn cev-type-btn" data-type="surf" onclick="setCevType(this)">🌊 Surf</button>
+          <button class="cf-btn cev-type-btn" data-type="camp" onclick="setCevType(this)">🏕️ Free Camp</button>
+          <button class="cf-btn cev-type-btn" data-type="market" onclick="setCevType(this)">🛖 Market</button>
+          <button class="cf-btn cev-type-btn" data-type="other" onclick="setCevType(this)">✨ Other</button>
+        </div>
+        <div class="row">
+          <div class="field"><label>Location</label><input type="text" id="cev-location" placeholder="Byron Bay, Airlie Beach..."></div>
+          <div class="field" style="max-width:150px"><label>Date</label><input type="date" id="cev-date"></div>
+        </div>
+        <div class="row">
+          <div class="field" style="max-width:120px"><label>Time</label><input type="time" id="cev-time"></div>
+          <div class="field" style="max-width:130px"><label>Max people</label><input type="number" id="cev-max" placeholder="No limit" min="2"></div>
+        </div>
+        <label>Details</label>
+        <textarea id="cev-desc" placeholder="What's the vibe? What to bring? Costs?" style="min-height:65px"></textarea>
+        <label>How to find you / contact</label>
+        <input type="text" id="cev-contact" placeholder="Instagram @handle, Signal group, 'just show up'...">
+        <button class="btn btn-comm" onclick="postEvent()">🎉 Post Event</button>
       </div>
-      <div id="comm-builds-list"><div class="empty-comm"><div class="ei">⚡</div><h3>NO BUILDS SHARED YET</h3><p>Share your power setup so others can learn</p></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px" id="cev-filter-btns">
+        <button class="cf-btn active" onclick="filterEvents('all',this)">🗺️ All</button>
+        <button class="cf-btn" onclick="filterEvents('meetup',this)">🤝 Meetups</button>
+        <button class="cf-btn" onclick="filterEvents('party',this)">🎉 Parties</button>
+        <button class="cf-btn" onclick="filterEvents('surf',this)">🌊 Surf</button>
+        <button class="cf-btn" onclick="filterEvents('camp',this)">🏕️ Camps</button>
+      </div>
+      <div id="comm-events-feed"></div>
     </div>
 
-    <!-- BOARD -->
+    <!-- BOARD PANEL -->
     <div id="comm-board-panel" style="display:none">
       <div class="card comm">
         <div class="ct">POST TO THE BOARD</div>
-        <textarea id="cboard-msg" placeholder="Ask the community something, share a tip, a warning, a recommendation. Anything road-related goes." style="min-height:100px"></textarea>
-        <button class="btn btn-comm" onclick="postBoard()">🌐 Post to board</button>
+        <textarea id="cboard-msg" placeholder="Ask the community something, share a tip, post a warning..." style="min-height:70px"></textarea>
+        <div class="row">
+          <div class="field"><label>Tag</label><select id="cboard-tag"><option value="tip">💡 Tip</option><option value="ask">❓ Question</option><option value="warn">⚠️ Warning</option><option value="sell">💰 Selling</option><option value="find">🔍 Looking for</option></select></div>
+        </div>
+        <button class="btn btn-comm" onclick="postToBoard()">📋 Post to Board</button>
       </div>
-      <div id="comm-board-list"><div class="empty-comm"><div class="ei">💬</div><h3>BOARD IS EMPTY</h3><p>Start the conversation</p></div></div>
+      <div class="ch"><div class="ct">COMMUNITY BOARD</div><div id="cboard-count" style="font-size:12px;color:var(--muted);font-family:var(--ffq)"></div></div>
+      <div id="comm-board-list"></div>
     </div>
-  </div>
 
-  <!-- not connected state -->
-  <div id="comm-not-connected" style="display:none">
-    <div class="empty-comm">
-      <div class="ei">🔥</div>
-      <h3>NOT CONNECTED</h3>
-      <p style="margin-bottom:14px">Set up Firebase above to join the community</p>
-      <button class="btn btn-comm" onclick="$('comm-setup-banner').style.display='block';this.parentElement.parentElement.style.display='none'">Set up now</button>
+    <!-- ADMIN PANEL -->
+    <div id="comm-admin-panel" style="display:none">
+      <div class="card pwr" style="margin-bottom:14px">
+        <div class="ct">⭐ ADMIN PANEL</div>
+        <div class="tip"><b>You are the NOMAD admin.</b> You can delete any post, ban users, and manage the community.</div>
+        <div class="sg sg2" style="margin-bottom:14px">
+          <div class="st"><div class="lbl">Total users</div><div class="val" id="adm-users">–</div></div>
+          <div class="st"><div class="lbl">Online now</div><div class="val" id="adm-online">–</div></div>
+          <div class="st"><div class="lbl">Total spots</div><div class="val" id="adm-spots">–</div></div>
+          <div class="st"><div class="lbl">Events posted</div><div class="val" id="adm-events">–</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">👥 ALL USERS</div>
+        <div id="adm-user-list" style="max-height:320px;overflow-y:auto"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">📢 BROADCAST MESSAGE</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Send a message to all users — appears pinned at the top of chat.</p>
+        <textarea id="adm-broadcast" placeholder="Important update, new feature, welcome message..." style="min-height:65px"></textarea>
+        <button class="btn" onclick="adminBroadcast()">📢 Send to Everyone</button>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="ct">🗑️ MODERATION</div>
+        <button class="bg" onclick="adminClearChat()" style="color:var(--red);border-color:rgba(204,64,64,.25);margin-bottom:8px">🗑️ Clear all chat messages</button>
+        <button class="bg" onclick="adminRefreshStats()">🔄 Refresh stats</button>
+      </div>
     </div>
+
   </div>
-</div>
 
 <!-- ═══ MOON ═══ -->
 <div id="tab-moon" class="tab">
@@ -2185,7 +2308,7 @@ input:focus, select:focus, textarea:focus {
 </div>
 
 <!-- ═══ WATER ═══ -->
-<div id="tab-res" class="tab">
+<div id="tab-water" class="tab">
   <div class="ph"><h1>💧 RESOURCES</h1><p>Water & gas — the lifeblood</p></div>
   <div class="card teal"><div class="ct">FRESH WATER</div><div class="row"><div class="field"><label>Capacity (L)</label><input type="number" id="w-cap" value="60" inputmode="numeric" oninput="sW();cW()"></div><div class="field"><label>Current (L)</label><input type="number" id="w-cur" value="45" step="0.5" inputmode="decimal" oninput="sW();cW()"></div></div><div class="row"><div class="field"><label>Daily use (L)</label><input type="number" id="w-d" value="8" step="0.5" inputmode="decimal" oninput="sW();cW()"></div><div class="field"><label>Grey tank (L)</label><input type="number" id="w-g" value="40" inputmode="numeric" oninput="sW()"></div></div><button class="btn btn-teal" onclick="fillT()">✓ Mark full</button></div>
   <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-family:var(--ff-d);font-size:22px;letter-spacing:.05em" id="w-pct">75%</span><span style="font-size:13px;color:var(--muted);font-weight:500" id="w-lv">45/60 L</span></div><div class="pw tk"><div class="pb" id="w-bar" style="width:75%;background:var(--teal)"></div></div><div class="sg sg2" style="margin-top:10px"><div class="st"><div class="lbl">Days left</div><div class="val" id="w-days">—</div></div><div class="st"><div class="lbl">Refill by</div><div class="val" id="w-ref" style="font-size:15px;font-family:var(--ff)">—</div></div></div><div class="div"></div><div class="ct" style="margin-bottom:10px">LOG USAGE</div><div class="row"><div class="field"><label>Litres</label><input type="number" id="wu-l" placeholder="0" min="0" step="0.5" inputmode="decimal"></div><div class="field"><label>Activity</label><select id="wu-a"><option>Drinking</option><option>Cooking</option><option>Dishes</option><option>Shower</option><option>Other</option></select></div></div><button class="btn" onclick="logW()">Log</button><div id="w-log" style="margin-top:10px"></div></div>
@@ -2385,11 +2508,88 @@ input:focus, select:focus, textarea:focus {
 <div id="tab-soul" class="tab">
   <div class="ph"><h1>✨ SOUL</h1><p>The most important journey is inward</p></div>
   <div id="fm-container" style="margin-bottom:14px"></div>
+  <div id="settings-section" style="margin-bottom:14px"></div>
   <div class="card" style="text-align:center"><div class="ct">ADVENTURE SCORE</div><div class="score-ring" style="margin:8px auto 12px"><div class="sn" id="adv-sc">0</div><div class="sl2">Points</div></div><div style="font-family:var(--ff-d);font-size:20px;color:var(--gold);letter-spacing:.07em" id="adv-rank">Start logging!</div><div style="font-size:12px;color:var(--muted2);margin-top:8px;font-weight:500">Spots +10 · Places +15 · Moments +5 · Diary +3 · People +3</div></div>
   <div class="card purple"><div class="ct">DAILY WISDOM</div><p class="wis" id="soul-wis"></p><div class="wis-attr" id="soul-attr"></div></div>
   <div class="card"><div class="ct">GRATITUDE</div><div style="font-size:16px;font-style:italic;font-weight:500;color:var(--gold);margin-bottom:12px" id="grat-p">What made today worth living?</div><input type="text" id="g-1" placeholder="I'm grateful for..."><input type="text" id="g-2" placeholder="Something beautiful I noticed..."><input type="text" id="g-3" placeholder="One person who mattered today..."><button class="btn" onclick="saveGrat()">Save ✨</button><div id="grat-hist" style="margin-top:12px"></div></div>
   <div class="card"><div class="ct">SLEEP LOG</div><div class="row"><div class="field"><label>Date</label><input type="date" id="sl-dt"></div><div class="field"><label>Hours</label><input type="number" id="sl-h" placeholder="7.5" min="0" max="24" step="0.5" inputmode="decimal"></div></div><label>Quality</label><select id="sl-q"><option value="5">😴 Out like a light</option><option value="4">😊 Good</option><option value="3">😐 OK</option><option value="2">😩 Rough</option><option value="1">🥵 Barely slept</option></select><input type="text" id="sl-no" placeholder="Reason?"><button class="btn" onclick="logSl()">Log sleep</button><div id="sl-log" style="margin-top:10px"></div></div>
   <div class="card" style="border-color:rgba(244,143,177,.18)"><div class="ct">ROAD WISDOM</div><p class="wis">"Your life is your story. Write well. Edit often."</p><div class="wis-attr">— Susan Statham</div><div class="div"></div><p class="wis">"The cure for anything is salt water — sweat, tears, or the sea."</p><div class="wis-attr">— Isak Dinesen</div><div class="div"></div><p class="wis">"Do not go where the path may lead. Go instead where there is no path and leave a trail."</p><div class="wis-attr">— Ralph Waldo Emerson</div><div class="div"></div><p class="wis">"Wild and free — that's the only way to be. ☮"</p><div class="wis-attr">— The road</div></div>
+</div>
+
+
+<!-- ═══ AMENITIES ═══ -->
+<div id="tab-amenities" class="tab">
+  <div class="ph"><div class="ph-icon">🚿</div><h1>AMENITIES</h1><p>Public showers · 24/7 toilets · Drinking water</p></div>
+
+  <!-- FILTER PILLS -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="am-filters">
+    <button class="am-filter active" data-type="all"    onclick="amFilter(this,'all')">🗺️ All</button>
+    <button class="am-filter"        data-type="shower" onclick="amFilter(this,'shower')">🚿 Showers</button>
+    <button class="am-filter"        data-type="toilet" onclick="amFilter(this,'toilet')">🚻 Toilets</button>
+    <button class="am-filter"        data-type="water"  onclick="amFilter(this,'water')">💧 Water</button>
+  </div>
+
+  <!-- SEARCH AREA -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct">🔍 SEARCH AREA</div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="field"><input type="text" id="am-search-input" placeholder="Suburb, town or postcode..." style="margin:0"></div>
+      <button class="bg bsm" onclick="amSearchLocation()" style="margin:0;white-space:nowrap">Search</button>
+    </div>
+    <button class="btn btn-teal" onclick="amUseMyLocation()" style="font-size:15px;padding:11px">📍 Use My Location</button>
+    <div id="am-status" style="text-align:center;font-size:13px;color:var(--muted);margin-top:10px;font-family:var(--ffq)"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px;border-radius:22px">
+    <div id="am-map" style="height:340px;width:100%;border-radius:22px;background:var(--soil)">
+      <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);flex-direction:column;gap:8px">
+        <div style="font-size:36px">🗺️</div>
+        <div style="font-family:var(--ffq);font-size:13px;font-weight:700">Search or use your location to load the map</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="card" style="margin-bottom:14px">
+    <div class="ct">MAP LEGEND</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+      <div style="background:rgba(78,163,154,.1);border:1.5px solid rgba(78,163,154,.25);border-radius:14px;padding:12px 8px">
+        <div style="font-size:28px;margin-bottom:4px">🚿</div>
+        <div style="font-family:var(--ffq);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)">Showers</div>
+        <div id="am-count-shower" style="font-family:var(--ffd);font-size:22px;color:var(--teal);letter-spacing:.04em;margin-top:3px">–</div>
+      </div>
+      <div style="background:rgba(240,180,76,.1);border:1.5px solid rgba(240,180,76,.25);border-radius:14px;padding:12px 8px">
+        <div style="font-size:28px;margin-bottom:4px">🚻</div>
+        <div style="font-family:var(--ffq);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--amber)">Toilets</div>
+        <div id="am-count-toilet" style="font-family:var(--ffd);font-size:22px;color:var(--amber);letter-spacing:.04em;margin-top:3px">–</div>
+      </div>
+      <div style="background:rgba(224,122,63,.1);border:1.5px solid rgba(224,122,63,.25);border-radius:14px;padding:12px 8px">
+        <div style="font-size:28px;margin-bottom:4px">💧</div>
+        <div style="font-family:var(--ffq);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--orange-hi)">Water</div>
+        <div id="am-count-water" style="font-family:var(--ffd);font-size:22px;color:var(--orange-hi);letter-spacing:.04em;margin-top:3px">–</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS LIST -->
+  <div class="card">
+    <div class="ch">
+      <div class="ct">NEARBY AMENITIES</div>
+      <div id="am-list-count" style="font-size:12px;color:var(--muted);font-weight:700;font-family:var(--ffq)"></div>
+    </div>
+    <div id="am-list">
+      <div style="text-align:center;padding:24px;color:var(--muted)">
+        <div style="font-size:36px;margin-bottom:8px">📍</div>
+        <div style="font-family:var(--ffq);font-size:13px;font-weight:700">Search an area to find amenities near you</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA CREDIT -->
+  <div style="text-align:center;font-size:11px;color:var(--faint);font-family:var(--ffq);padding:8px 0 4px">
+    Data from <a href="https://www.openstreetmap.org" target="_blank" style="color:var(--muted)">© OpenStreetMap</a> contributors via Overpass API · Free, no account needed
+  </div>
 </div>
 
 <script>
@@ -2497,7 +2697,7 @@ function showCommTab(tab,btn){
   activeCommTab=tab;
   document.querySelectorAll('#comm-tab-btns .cf-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  ['spots','moments','builds','board'].forEach(t=>$('comm-'+t+'-panel').style.display=t===tab?'block':'none');
+  ['spots','moments','builds','board','events'].forEach(t=>{ const el=$('comm-'+t+'-panel'); if(el) el.style.display=t===tab?'block':'none'; });
   if(tab==='spots')loadCommunitySpots();
   if(tab==='moments')loadCommunityMoments();
   if(tab==='builds')loadCommunityBuilds();
@@ -3795,26 +3995,7 @@ document.addEventListener('click', e=>{
   setInterval(observe, 1800);
 })();
 
-// ── WRAP ST FOR TAB EVENTS ──
-if(typeof ST !== 'undefined'){
-  const _ST = ST;
-  ST = function(id, btn){
-    _ST(id, btn);
-    document.dispatchEvent(new Event('tabChanged'));
-    // Animate progress bars
-    setTimeout(()=>{
-      document.querySelectorAll('.pw .pb').forEach(b=>{
-        const w=b.style.width; b.style.width='0%';
-        setTimeout(()=>{b.style.width=w;}, 60);
-      });
-    }, 60);
-  };
-}
-
-// ── HAPTIC TOUCH STATES ──
-document.addEventListener('touchstart', e=>{
-  e.target.closest('.card,.qa-btn,.hstat-card,.mb')?.style && (e.target.closest('.card,.qa-btn,.hstat-card,.mb').style.transform='scale(.97)');
-},{passive:true});
+// ST consolidated in launch fixes,{passive:true});
 document.addEventListener('touchend', e=>{
   const el = e.target.closest('.card,.qa-btn,.hstat-card,.mb');
   if(el) setTimeout(()=>el.style.transform='',160);
@@ -4179,5 +4360,1728 @@ document.addEventListener('tabChanged', ()=>{
 
 console.log('🚐 NOMAD v11 Premium Engine • Journey Mode • Campfire Mode • Freedom Metrics ✓');
 
+
+
+// ══════════════════════════════════════════════════════════
+// AMENITIES MAP — Public Showers, Toilets, Drinking Water
+// Uses OpenStreetMap + Overpass API (free, no key needed)
+// ══════════════════════════════════════════════════════════
+
+let _amMap = null;
+let _amMarkers = [];
+let _amData = [];
+let _amFilter = 'all';
+let _amUserLat = null;
+let _amUserLng = null;
+
+// ── FILTER ICONS & COLOURS ──
+const AM_CONFIG = {
+  shower: { icon:'🚿', label:'Public Shower',   color:'#4ea39a', darkColor:'rgba(78,163,154,.7)' },
+  toilet: { icon:'🚻', label:'Public Toilet',   color:'#f0b44c', darkColor:'rgba(240,180,76,.7)' },
+  water:  { icon:'💧', label:'Drinking Water',  color:'#f09050', darkColor:'rgba(224,122,63,.7)' },
+};
+
+// ── OVERPASS QUERY ──
+function buildOverpassQuery(lat, lng, radius=3000){
+  // Query for: showers, toilets (24h focus), drinking water, water points
+  return `
+    [out:json][timeout:25];
+    (
+      node["amenity"="shower"](around:${radius},${lat},${lng});
+      node["amenity"="toilets"](around:${radius},${lat},${lng});
+      node["amenity"="drinking_water"](around:${radius},${lat},${lng});
+      node["amenity"="water_point"](around:${radius},${lat},${lng});
+      node["man_made"="water_tap"](around:${radius},${lat},${lng});
+    );
+    out body;
+  `;
+}
+
+// ── CLASSIFY NODES ──
+function classifyNode(node){
+  const t = node.tags || {};
+  if(t.amenity === 'shower')          return 'shower';
+  if(t.amenity === 'toilets')         return 'toilet';
+  if(t.amenity === 'drinking_water')  return 'water';
+  if(t.amenity === 'water_point')     return 'water';
+  if(t.man_made === 'water_tap')      return 'water';
+  return 'unknown';
+}
+
+// ── PARSE OPENING HOURS ──
+function parseHours(tags){
+  const oh = tags.opening_hours || tags['opening_hours'];
+  if(!oh) return { label:'Hours unknown', cls:'unknown' };
+  if(oh === '24/7') return { label:'24/7 open', cls:'open24' };
+  if(oh && oh.toLowerCase().includes('24')) return { label:'24hrs', cls:'open' };
+  if(tags.fee === 'yes') return { label:'Paid · '+oh, cls:'paid' };
+  return { label:oh, cls:'open' };
+}
+
+// ── GET NAME ──
+function getNodeName(node){
+  const t = node.tags || {};
+  return t.name || t['name:en'] || t.description || null;
+}
+
+// ── DISTANCE (km) ──
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── CREATE CUSTOM MARKER ──
+function createMarkerIcon(type){
+  const cfg = AM_CONFIG[type] || AM_CONFIG.water;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="44" viewBox="0 0 36 44">
+    <ellipse cx="18" cy="42" rx="7" ry="3" fill="rgba(0,0,0,0.35)"/>
+    <path d="M18 2 C9 2 2 9 2 18 C2 30 18 42 18 42 C18 42 34 30 34 18 C34 9 27 2 18 2Z" fill="${cfg.color}" opacity="0.95" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+    <circle cx="18" cy="18" r="11" fill="rgba(0,0,0,0.3)"/>
+    <text x="18" y="23" text-anchor="middle" font-size="14">${cfg.icon}</text>
+  </svg>`;
+  return L.divIcon({
+    html: svg,
+    iconSize:[36,44], iconAnchor:[18,44], popupAnchor:[0,-44],
+    className:'am-leaflet-icon'
+  });
+}
+
+// ── INIT / RESET MAP ──
+function initAmMap(lat, lng){
+  const mapEl = document.getElementById('am-map');
+  if(!mapEl) return;
+
+  // Replace placeholder content
+  mapEl.innerHTML = '';
+
+  if(_amMap){ _amMap.remove(); _amMap = null; }
+
+  _amMap = L.map('am-map', {
+    zoomControl:true,
+    attributionControl:true,
+    maxZoom:18,
+  }).setView([lat, lng], 15);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom:19,
+  }).addTo(_amMap);
+
+  // User location marker
+  if(_amUserLat && _amUserLng){
+    const userIcon = L.divIcon({
+      html:`<div style="width:14px;height:14px;background:#e07a3f;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 3px rgba(224,122,63,.4),0 2px 8px rgba(0,0,0,.5)"></div>`,
+      iconSize:[14,14], iconAnchor:[7,7], className:''
+    });
+    L.marker([_amUserLat,_amUserLng], {icon:userIcon})
+      .addTo(_amMap)
+      .bindPopup('<b style="color:#f0b44c;font-family:Fredoka">You are here 📍</b>');
+  }
+}
+
+// ── FETCH FROM OVERPASS ──
+async function fetchAmenities(lat, lng){
+  setAmStatus('🔍 Searching for amenities nearby…', 'var(--amber)');
+  _amData = [];
+
+  try {
+    const query = buildOverpassQuery(lat, lng, 3000);
+    const encoded = encodeURIComponent(query);
+    const url = `https://overpass-api.de/api/interpreter?data=${encoded}`;
+
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Overpass API error: ' + res.status);
+    const data = await res.json();
+
+    if(!data.elements || data.elements.length === 0){
+      setAmStatus('😔 No amenities found within 3km. Try a different location.', 'var(--muted)');
+      renderAmList([]);
+      return;
+    }
+
+    // Process and classify nodes
+    _amData = data.elements
+      .filter(e => e.lat && e.lon)
+      .map(e => {
+        const type = classifyNode(e);
+        const cfg = AM_CONFIG[type] || AM_CONFIG.water;
+        const dist = (_amUserLat && _amUserLng)
+          ? haversine(_amUserLat,_amUserLng,e.lat,e.lon)
+          : haversine(lat,lng,e.lat,e.lon);
+        const hours = parseHours(e.tags||{});
+        const name = getNodeName(e);
+        const t = e.tags || {};
+
+        return {
+          id: e.id,
+          type,
+          lat: e.lat, lng: e.lon,
+          name: name || cfg.label,
+          dist,
+          hours,
+          fee: t.fee === 'yes',
+          accessible: t.wheelchair === 'yes',
+          hot_water: t.hot_water === 'yes' || t['hot_water'] === 'yes',
+          male: t.male !== 'no',
+          female: t.female !== 'no',
+          unisex: t.unisex === 'yes',
+          operator: t.operator || null,
+          note: t.note || t.description || null,
+        };
+      })
+      .filter(e => e.type !== 'unknown')
+      .sort((a,b) => a.dist - b.dist);
+
+    const counts = { shower:0, toilet:0, water:0 };
+    _amData.forEach(e => { if(counts[e.type]!==undefined) counts[e.type]++; });
+    document.getElementById('am-count-shower').textContent = counts.shower;
+    document.getElementById('am-count-toilet').textContent = counts.toilet;
+    document.getElementById('am-count-water').textContent  = counts.water;
+
+    const total = _amData.length;
+    setAmStatus(`✅ Found ${total} amenities within 3km`, 'var(--green)');
+
+    renderAmMarkers(_amData);
+    renderAmList(_amData);
+
+  } catch(err) {
+    console.error('Amenities fetch error:', err);
+    // Fallback to backup mirror
+    try {
+      const query = buildOverpassQuery(lat, lng, 3000);
+      const res = await fetch('https://overpass.kumi.systems/api/interpreter', {
+        method:'POST', body:'data='+encodeURIComponent(query)
+      });
+      if(res.ok){
+        const data = await res.json();
+        // Same processing...
+        setAmStatus(`Found ${data.elements?.length||0} results`, 'var(--green)');
+      } else { throw new Error('Both mirrors failed'); }
+    } catch(e2) {
+      setAmStatus('⚠️ Could not load data. Check your connection.', 'var(--red)');
+    }
+  }
+}
+
+// ── RENDER MARKERS ──
+function renderAmMarkers(data){
+  if(!_amMap) return;
+  _amMarkers.forEach(m => _amMap.removeLayer(m));
+  _amMarkers = [];
+
+  const filtered = _amFilter === 'all' ? data : data.filter(e => e.type === _amFilter);
+
+  filtered.forEach(item => {
+    const cfg = AM_CONFIG[item.type] || AM_CONFIG.water;
+    const marker = L.marker([item.lat, item.lng], { icon: createMarkerIcon(item.type) });
+
+    const distStr = item.dist < 1
+      ? Math.round(item.dist*1000) + 'm'
+      : item.dist.toFixed(1) + 'km';
+
+    const extras = [
+      item.accessible ? '♿ Accessible' : null,
+      item.hot_water  ? '🔥 Hot water' : null,
+      item.fee        ? '💰 Fee applies' : null,
+      item.operator   ? `🏢 ${item.operator}` : null,
+      item.note       ? `📝 ${item.note}` : null,
+    ].filter(Boolean).join('<br>');
+
+    marker.bindPopup(`
+      <div style="min-width:180px;font-family:'Inter',sans-serif">
+        <div style="font-family:'Fredoka',sans-serif;font-size:19px;font-weight:700;color:${cfg.color};letter-spacing:.04em;margin-bottom:5px">${cfg.icon} ${item.name}</div>
+        <div style="font-size:12px;color:rgba(244,237,224,.6);margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="background:rgba(255,255,255,.08);border-radius:5px;padding:2px 7px">${distStr} away</span>
+          <span style="background:${item.hours.cls==='open24'?'rgba(46,110,72,.3)':'rgba(255,255,255,.08)'};border-radius:5px;padding:2px 7px">${item.hours.label}</span>
+        </div>
+        ${extras ? `<div style="font-size:12px;color:rgba(244,237,224,.5);line-height:1.7">${extras}</div>` : ''}
+        <div style="margin-top:9px">
+          <a href="https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}" target="_blank" style="display:inline-block;background:${cfg.color};color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;text-decoration:none">Get Directions →</a>
+        </div>
+      </div>
+    `);
+
+    marker.addTo(_amMap);
+    _amMarkers.push(marker);
+  });
+
+  // Fit map to markers
+  if(filtered.length > 0){
+    const group = L.featureGroup(filtered.map(e => L.marker([e.lat, e.lng])));
+    _amMap.fitBounds(group.getBounds().pad(.15), {maxZoom:16});
+  }
+}
+
+// ── RENDER LIST ──
+function renderAmList(data){
+  const el = document.getElementById('am-list');
+  const countEl = document.getElementById('am-list-count');
+  if(!el) return;
+
+  const filtered = _amFilter === 'all' ? data : data.filter(e => e.type === _amFilter);
+
+  if(countEl) countEl.textContent = filtered.length + ' found';
+
+  if(filtered.length === 0){
+    el.innerHTML = `<div style="text-align:center;padding:24px 0;color:var(--muted)"><div style="font-size:32px;margin-bottom:8px">🔍</div><div style="font-family:var(--ffq);font-size:13px;font-weight:700">Nothing found with this filter</div></div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.slice(0,30).map(item => {
+    const cfg = AM_CONFIG[item.type] || AM_CONFIG.water;
+    const distStr = item.dist < 1
+      ? Math.round(item.dist*1000) + 'm'
+      : item.dist.toFixed(1) + 'km';
+
+    const extras = [
+      item.hot_water  ? '🔥 Hot' : null,
+      item.accessible ? '♿' : null,
+      item.fee        ? '💰 Paid' : null,
+      item.male && item.female && !item.unisex ? '👫' : null,
+      item.unisex ? '🚻 Unisex' : null,
+    ].filter(Boolean).join(' · ');
+
+    return `<div class="am-item" onclick="amFlyTo(${item.lat},${item.lng},${item.id})">
+      <div class="am-icon ${item.type}">${cfg.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="am-name">${item.name}</div>
+        <div class="am-meta">
+          <span class="am-open-badge ${item.hours.cls}">${item.hours.label}</span>
+          ${extras ? `<span style="color:var(--faint)">${extras}</span>` : ''}
+        </div>
+      </div>
+      <div class="am-dist">${distStr}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── FLY TO MARKER ──
+function amFlyTo(lat, lng, id){
+  if(!_amMap) return;
+  _amMap.flyTo([lat,lng], 17, {duration:1.2});
+  setTimeout(()=>{
+    _amMarkers.forEach(m => {
+      if(m.getLatLng().lat===lat && m.getLatLng().lng===lng) m.openPopup();
+    });
+  }, 1300);
+  // Scroll to map
+  document.getElementById('am-map')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── FILTER ──
+function amFilter(btn, type){
+  document.querySelectorAll('.am-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _amFilter = type;
+  renderAmMarkers(_amData);
+  renderAmList(_amData);
+}
+
+// ── USE MY LOCATION ──
+function amUseMyLocation(){
+  setAmStatus('📍 Getting your location…', 'var(--amber)');
+  if(!navigator.geolocation){
+    setAmStatus('⚠️ Location not available on this device', 'var(--red)');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      _amUserLat = pos.coords.latitude;
+      _amUserLng = pos.coords.longitude;
+      initAmMap(_amUserLat, _amUserLng);
+      fetchAmenities(_amUserLat, _amUserLng);
+    },
+    err => {
+      setAmStatus('❌ Location denied. Try searching a suburb instead.', 'var(--red)');
+    },
+    { timeout:12000, maximumAge:60000 }
+  );
+}
+
+// ── SEARCH BY LOCATION NAME ──
+async function amSearchLocation(){
+  const input = document.getElementById('am-search-input');
+  const query = input?.value?.trim();
+  if(!query) return;
+
+  setAmStatus('🔍 Looking up ' + query + '…', 'var(--amber)');
+
+  try {
+    // Use Nominatim (free OpenStreetMap geocoding)
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=au`;
+    const res = await fetch(url, { headers: { 'Accept-Language':'en', 'User-Agent':'NOMAD-VanLife-App/1.0' } });
+    const data = await res.json();
+
+    if(!data || data.length === 0){
+      // Try without country restriction
+      const res2 = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`, { headers: { 'User-Agent':'NOMAD-VanLife-App/1.0' } });
+      const data2 = await res2.json();
+      if(!data2 || data2.length === 0){
+        setAmStatus('❌ Location not found. Try a different search.', 'var(--red)');
+        return;
+      }
+      const loc = data2[0];
+      _amUserLat = parseFloat(loc.lat);
+      _amUserLng = parseFloat(loc.lon);
+    } else {
+      const loc = data[0];
+      _amUserLat = parseFloat(loc.lat);
+      _amUserLng = parseFloat(loc.lon);
+    }
+
+    initAmMap(_amUserLat, _amUserLng);
+    fetchAmenities(_amUserLat, _amUserLng);
+
+  } catch(err) {
+    setAmStatus('❌ Search failed. Check your connection.', 'var(--red)');
+  }
+}
+
+// ── STATUS MESSAGE ──
+function setAmStatus(msg, color='var(--muted)'){
+  const el = document.getElementById('am-status');
+  if(el){ el.textContent = msg; el.style.color = color; }
+}
+
+// ── INIT when tab opens ──
+function initAmenitiesTab(){
+  // Pre-fill search from user's van location if saved
+  const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  if(bs.homeState){
+    const input = document.getElementById('am-search-input');
+    if(input && !input.value) input.placeholder = 'e.g. Byron Bay, ' + bs.homeState + '…';
+  }
+  // If we already have data loaded, re-render
+  if(_amData.length > 0 && _amMap) renderAmMarkers(_amData);
+  // Invalidate map size after tab show
+  if(_amMap) setTimeout(()=>_amMap.invalidateSize(), 200);
+}
+
+// Hook into tab switch
+// Amenities ST hook consolidated in launch fixes
+
+// Allow Enter key in search box
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp = document.getElementById('am-search-input');
+  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') amSearchLocation(); });
+});
+
+console.log('🚿 NOMAD Amenities Map loaded — OpenStreetMap + Overpass API ✓');
+
+// ══════════════════════════════════════════════════════════
+// NOMAD SOFT LAUNCH — COMPREHENSIVE FIXES & ENHANCEMENTS
+// Version 11.1 — Production Ready
+// ══════════════════════════════════════════════════════════
+
+// ── CONSOLIDATE ST WRAPPERS ── (prevent double-wrap bugs)
+// All tab hooks now in one clean place
+(function consolidateST(){
+  const _baseST = ST;
+  ST = function(id, btn){
+    // Guard: if tab div doesn't exist, do nothing
+    const tabEl = document.getElementById('tab-'+id);
+    if(!tabEl) { console.warn('NOMAD: No tab found for id:', id); return; }
+
+    // Clear all active states
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+    tabEl.classList.add('active');
+    if(btn) btn.classList.add('active');
+
+    // Tab-specific hooks
+    if(id==='home')       rHome();
+    if(id==='moon')       rMoon();
+    if(id==='soul')       { rSoul(); setTimeout(buildFreedomMetrics,100); }
+    if(id==='community')  initCommunityTab();
+    if(id==='weather'&&!get('wx_last')) setTimeout(fetchWx,300);
+    if(id==='budget')     rIncome();
+    if(id==='routines')   rRoutines();
+    if(id==='storage')    rZones();
+    if(id==='data')       { rSIMs(); rSigLog(); }
+    if(id==='emergency')  { rEmContacts(); rFAK(); }
+    if(id==='power')      rSolarLog();
+    if(id==='vanneeds')   rVanNeeds();
+    if(id==='goals')      rGoals();
+    if(id==='water')      { lW(); cW(); rWL(); }
+    if(id==='amenities')  setTimeout(initAmenitiesTab, 150);
+    if(id==='kitchen')    rFPGrid();
+
+    // Dispatch for scroll reveal + animations
+    document.dispatchEvent(new Event('tabChanged'));
+
+    // Animate progress bars on new tab
+    setTimeout(()=>{
+      document.querySelectorAll('.pw .pb').forEach(b=>{
+        const w=b.style.width; b.style.width='0%';
+        setTimeout(()=>{b.style.width=w;},60);
+      });
+    },80);
+
+    // Scroll to top on mobile
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+})();
+
+// ══════════════════════════════════════════════════════════
+// DATA EXPORT / BACKUP SYSTEM
+// ══════════════════════════════════════════════════════════
+
+function exportNomadData(){
+  const allKeys = Object.keys(localStorage).filter(k=>k.startsWith('nm5_')||k.startsWith('nomad')||k.startsWith('wx_'));
+  const data = {};
+  allKeys.forEach(k=>{ try{ data[k]=JSON.parse(localStorage.getItem(k)); }catch(e){ data[k]=localStorage.getItem(k); }});
+
+  const blob = new Blob([JSON.stringify({
+    version:'11.1',
+    exported: new Date().toISOString(),
+    data
+  }, null, 2)], {type:'application/json'});
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `nomad-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✅ Backup saved to Downloads!');
+}
+
+function importNomadData(file){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const backup = JSON.parse(e.target.result);
+      if(!backup.data) throw new Error('Invalid backup file');
+      const count = Object.keys(backup.data).length;
+      if(!confirm(`Restore ${count} data items from backup dated ${backup.exported?.split('T')[0]||'unknown'}?\n\nThis will overwrite your current data.`)) return;
+      Object.entries(backup.data).forEach(([k,v])=>{
+        localStorage.setItem(k, typeof v==='string' ? v : JSON.stringify(v));
+      });
+      showToast('✅ Data restored! Reloading...');
+      setTimeout(()=>location.reload(), 1200);
+    }catch(err){
+      showToast('❌ Invalid backup file', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════════════════════
+// TOAST NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════════════════
+
+function showToast(msg, type='success'){
+  // Remove existing toasts
+  document.querySelectorAll('.nomad-toast').forEach(t=>t.remove());
+
+  const toast = document.createElement('div');
+  toast.className = 'nomad-toast';
+  const colors = {
+    success: 'rgba(46,110,72,.95)',
+    error:   'rgba(168,40,40,.95)',
+    info:    'rgba(78,163,154,.95)',
+    warn:    'rgba(200,140,20,.95)',
+  };
+  toast.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:${colors[type]||colors.success};
+    color:#f4ede0;padding:13px 22px;border-radius:999px;
+    font-family:'Quicksand',sans-serif;font-size:14px;font-weight:700;
+    box-shadow:0 8px 32px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.1);
+    z-index:99999;transition:transform .35s cubic-bezier(.34,1.28,.64,1),opacity .35s ease;
+    max-width:90vw;text-align:center;white-space:nowrap;opacity:0;
+  `;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      toast.style.transform = 'translateX(-50%) translateY(0)';
+      toast.style.opacity = '1';
+    });
+  });
+
+  setTimeout(()=>{
+    toast.style.transform = 'translateX(-50%) translateY(80px)';
+    toast.style.opacity = '0';
+    setTimeout(()=>toast.remove(), 400);
+  }, 3200);
+}
+window.showToast = showToast;
+
+// ══════════════════════════════════════════════════════════
+// SETTINGS TAB — add to Soul tab
+// ══════════════════════════════════════════════════════════
+
+function buildSettingsSection(){
+  const container = document.getElementById('settings-section');
+  if(!container) return;
+
+  const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+
+  container.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct">⚙️ DATA & BACKUP</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:500;line-height:1.6">Your NOMAD data is stored locally on your device. Export regularly to keep a backup.</p>
+      <button class="btn btn-teal" onclick="exportNomadData()" style="font-size:16px;padding:12px;margin-bottom:10px">
+        ⬇️ Export Backup (.json)
+      </button>
+      <label class="bg" style="cursor:pointer;text-align:center;display:block;padding:10px;border-radius:12px">
+        ⬆️ Import / Restore Backup
+        <input type="file" accept=".json" style="display:none" onchange="importNomadData(this.files[0])">
+      </label>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct">🔄 RESET</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Export your data first before resetting. This cannot be undone.</p>
+      <button class="bg" onclick="confirmReset()" style="color:var(--red);border-color:rgba(204,64,64,.25)">🗑️ Reset All NOMAD Data</button>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="ct">📲 INSTALL APP</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Add NOMAD to your home screen for an app-like experience.</p>
+      <div id="pwa-install-section">
+        <button class="btn" id="pwa-install-btn" onclick="triggerPWAInstall()" style="display:none;font-size:16px;padding:12px;margin-bottom:10px">📲 Add to Home Screen</button>
+        <div class="tip"><b>iPhone/iPad:</b> Tap Share → Add to Home Screen<br><b>Android:</b> Tap menu → Add to Home Screen or Install App</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">ℹ️ ABOUT NOMAD</div>
+      <div class="lr"><div><div style="font-weight:700">Version</div></div><div style="color:var(--amber);font-family:var(--ffd);font-size:18px">v11.1</div></div>
+      <div class="lr"><div><div style="font-weight:700">Soft Launch</div></div><div style="color:var(--muted)">2026</div></div>
+      <div class="lr"><div><div style="font-weight:700">Made for</div></div><div style="color:var(--muted)">Van lifers 🚐</div></div>
+      <div class="div"></div>
+      <div style="text-align:center;font-family:var(--ffs);font-size:20px;color:var(--amber);padding:4px 0">
+        Live Simply. Explore Deeply.
+      </div>
+    </div>
+  `;
+}
+
+function confirmReset(){
+  if(!confirm('⚠️ This will DELETE all your NOMAD data.\n\nHave you exported a backup first?\n\nPress OK to confirm reset.')) return;
+  if(!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  Object.keys(localStorage).filter(k=>k.startsWith('nm5_')||k.startsWith('nomad')||k.startsWith('wx_')).forEach(k=>localStorage.removeItem(k));
+  showToast('Data cleared. Reloading...','warn');
+  setTimeout(()=>location.reload(),1200);
+}
+
+// ══════════════════════════════════════════════════════════
+// PWA INSTALL
+// ══════════════════════════════════════════════════════════
+let _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  _pwaPrompt = e;
+  const btn = document.getElementById('pwa-install-btn');
+  if(btn) btn.style.display='block';
+});
+function triggerPWAInstall(){
+  if(_pwaPrompt){ _pwaPrompt.prompt(); _pwaPrompt.userChoice.then(()=>{_pwaPrompt=null;}); }
+  else showToast('Use your browser menu to install','info');
+}
+
+// ══════════════════════════════════════════════════════════
+// SERVICE WORKER REGISTRATION
+// ══════════════════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    // Register inline service worker for offline capability
+    const swCode = `
+const CACHE='nomad-v11';
+const ASSETS=['/'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  if(e.request.url.includes('openstreetmap')||e.request.url.includes('overpass')||e.request.url.includes('open-meteo')||e.request.url.includes('firebase'))return;
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{
+    if(resp.ok){const c=resp.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}
+    return resp;
+  }).catch(()=>caches.match('/'))));
+});
+    `;
+    try{
+      const blob = new Blob([swCode],{type:'application/javascript'});
+      const url = URL.createObjectURL(blob);
+      navigator.serviceWorker.register(url).then(()=>{
+        console.log('🚐 NOMAD Service Worker registered (offline ready)');
+      }).catch(()=>{});
+    }catch(e){}
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// VERSION BADGE + SOFT LAUNCH INDICATOR
+// ══════════════════════════════════════════════════════════
+(function addVersionBadge(){
+  const badge = document.createElement('div');
+  badge.innerHTML = 'v11.1 🚐';
+  badge.style.cssText = `
+    position:fixed;bottom:8px;right:8px;z-index:9990;
+    font-family:'Quicksand',sans-serif;font-size:9px;font-weight:800;
+    letter-spacing:.08em;color:rgba(240,180,76,.25);
+    pointer-events:none;user-select:none;
+  `;
+  document.body.appendChild(badge);
+})();
+
+// ══════════════════════════════════════════════════════════
+// IMPROVED ERROR HANDLING — prevent blank screens
+// ══════════════════════════════════════════════════════════
+window.addEventListener('error', e=>{
+  console.error('NOMAD error:', e.message, 'at', e.filename, e.lineno);
+  // Don't show toasts for minor errors
+});
+window.addEventListener('unhandledrejection', e=>{
+  console.error('NOMAD unhandled promise:', e.reason);
+});
+
+// ══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUT GUIDE
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if(e.key==='?' && e.shiftKey){
+    showToast('⌨️ 1-9: tabs · H: home · C: campfire · J: journey · Esc: close','info');
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// SMART HOME DASHBOARD IMPROVEMENTS
+// ══════════════════════════════════════════════════════════
+
+// Improve rHome to also animate the stat counters
+const _origRHome = rHome;
+if(typeof rHome === 'function'){
+  rHome = function(){
+    _origRHome();
+    // Animate stat values after render
+    setTimeout(()=>{
+      ['h-pwr','h-wat','h-fuel','h-spend'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el && el.textContent !== '—'){
+          el.style.transition='all .4s cubic-bezier(.34,1.28,.64,1)';
+          el.style.transform='scale(1.08)';
+          setTimeout(()=>el.style.transform='',400);
+        }
+      });
+    },200);
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+// SMART ALERTS — run on every home visit
+// ══════════════════════════════════════════════════════════
+
+function checkRoutineAlerts(){
+  const routines = JSON.parse(localStorage.getItem('nm5_routines5')||'[]');
+  const today = new Date();
+  const overdue = routines.filter(r=>{
+    if(!r.lastDone) return false;
+    const last = new Date(r.lastDone);
+    const daysSince = Math.floor((today-last)/86400000);
+    return daysSince > (r.interval||7) + 2;
+  });
+  if(overdue.length > 0){
+    const el = document.getElementById('h-alerts');
+    if(el){
+      const alert = document.createElement('div');
+      alert.className = 'h-alert ha-warn';
+      alert.innerHTML = `<span style="font-size:18px;flex-shrink:0">🧺</span><span><strong>${overdue.length} overdue routine${overdue.length>1?'s':''}</strong> — ${overdue.slice(0,2).map(r=>r.name).join(', ')}. Tap to view →</span>`;
+      alert.onclick = ()=>{ const nb=document.querySelector('.nb:nth-child(17)'); if(nb)nb.click(); };
+      el.appendChild(alert);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// WATER TAB — ensure it loads correctly
+// ══════════════════════════════════════════════════════════
+// lW and cW exist, just need to ensure the tab loads them
+// They're called by the consolidated ST above
+
+// ══════════════════════════════════════════════════════════
+// IMPROVED BUDGET — daily spend reset
+// ══════════════════════════════════════════════════════════
+(function checkDailyReset(){
+  const lastReset = localStorage.getItem('nm5_last_date');
+  const today = new Date().toDateString();
+  if(lastReset !== today){
+    localStorage.setItem('nm5_last_date', today);
+    // Reset today's spend tracking (keep history)
+    const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+    if(bs.dailyBudget > 0){
+      // Just note the reset, actual expenses stay in history
+      console.log('NOMAD: New day detected, daily tracking reset');
+    }
+  }
+})();
+
+// ══════════════════════════════════════════════════════════
+// INIT SEQUENCE — clean startup
+// ══════════════════════════════════════════════════════════
+window.addEventListener('load', ()=>{
+  // Delay settings section build until soul tab is visited
+  document.addEventListener('tabChanged', ()=>{
+    if(document.getElementById('tab-soul')?.classList.contains('active')){
+      setTimeout(buildSettingsSection, 200);
+    }
+  });
+
+  // Check for updates (show version mismatch)
+  const storedVersion = localStorage.getItem('nomad_version');
+  if(storedVersion && storedVersion !== '11.1'){
+    showToast('✨ NOMAD updated to v11.1 — enjoy new features!','info');
+  }
+  localStorage.setItem('nomad_version','11.1');
+
+  // Run routine alerts on home
+  setTimeout(checkRoutineAlerts, 1500);
+
+  console.log('🚐 NOMAD v11.1 — Soft Launch Ready ✓');
+  console.log('   Press ? for keyboard shortcuts');
+});
+
+// ══════════════════════════════════════════════════════════
+// NOMAD EVENTS SYSTEM
+// Community gatherings, meetups, parties, surf sessions
+// Firebase-powered · Real-time · RSVP enabled
+// ══════════════════════════════════════════════════════════
+
+let _cevType = 'meetup';
+let _evFilter = 'all';
+let _evGoingSet = new Set(JSON.parse(localStorage.getItem('nomad_ev_going')||'[]'));
+
+const EV_CONFIG = {
+  meetup: { icon:'🤝', label:'Meetup',    badgeClass:'ev-meetup-badge', cardClass:'ev-meetup' },
+  party:  { icon:'🎉', label:'Party',     badgeClass:'ev-party-badge',  cardClass:'ev-party'  },
+  surf:   { icon:'🌊', label:'Surf',      badgeClass:'ev-surf-badge',   cardClass:'ev-surf'   },
+  camp:   { icon:'🏕️', label:'Free Camp', badgeClass:'ev-camp-badge',   cardClass:'ev-camp'   },
+  market: { icon:'🛖', label:'Market',    badgeClass:'ev-market-badge', cardClass:'ev-market' },
+  other:  { icon:'✨', label:'Other',     badgeClass:'ev-other-badge',  cardClass:'ev-other'  },
+};
+
+function setCevType(btn){
+  document.querySelectorAll('.cev-type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  _cevType = btn.dataset.type;
+}
+
+function filterEvents(type, btn){
+  _evFilter = type;
+  document.querySelectorAll('#cev-filter-btns .cf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadCommunityEvents();
+}
+
+// ── POST EVENT ──
+async function postEvent(){
+  const title    = ($('cev-title')?.value||'').trim();
+  const location = ($('cev-location')?.value||'').trim();
+  const date     = $('cev-date')?.value||'';
+  const time     = $('cev-time')?.value||'';
+  const desc     = ($('cev-desc')?.value||'').trim();
+  const contact  = ($('cev-contact')?.value||'').trim();
+  const maxPpl   = parseInt($('cev-max')?.value||'0')||0;
+
+  if(!title)    { showToast('Add an event name 🎉','warn'); return; }
+  if(!location) { showToast('Where is it? Add a location 📍','warn'); return; }
+  if(!date)     { showToast('When is it? Pick a date 📅','warn'); return; }
+  if(!desc)     { showToast('Tell people what\'s happening! ✍️','warn'); return; }
+
+  const bs    = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  const alias = bs.alias || bs.roadName || bs.name || 'A Nomad';
+
+  const event = {
+    title, location, date, time, desc, contact,
+    type: _cevType,
+    maxPpl,
+    host: alias,
+    going: [],
+    goingCount: 0,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: new Date().toISOString(),
+    // Soft-lock: only host can delete via alias match
+    hostKey: btoa(alias + date).slice(0,12),
+  };
+
+  if(!db){ showToast('Connect Firebase in the Community tab first','warn'); return; }
+
+  try{
+    await db.collection('community_events').add(event);
+    // Clear form
+    ['cev-title','cev-location','cev-date','cev-time','cev-desc','cev-contact','cev-max'].forEach(id=>{
+      if($(id)) $(id).value='';
+    });
+    showToast('🎉 Event posted! The crew will see it now!');
+    loadCommunityEvents();
+  }catch(e){
+    // Firebase not set up — store locally and show preview
+    const localEvents = JSON.parse(localStorage.getItem('nomad_local_events')||'[]');
+    event.id = 'local_'+Date.now();
+    event.timestamp = new Date().toISOString();
+    localEvents.unshift(event);
+    localStorage.setItem('nomad_local_events', JSON.stringify(localEvents.slice(0,20)));
+    showToast('Event saved locally — connect Firebase to share with the community','info');
+    loadCommunityEvents();
+  }
+}
+
+// ── RSVP / GOING ──
+async function toggleGoing(eventId, going){
+  const bs    = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  const alias = bs.alias || bs.roadName || bs.name || 'A Nomad';
+
+  if(_evGoingSet.has(eventId)){
+    _evGoingSet.delete(eventId);
+  } else {
+    _evGoingSet.add(eventId);
+  }
+  localStorage.setItem('nomad_ev_going', JSON.stringify([..._evGoingSet]));
+
+  // Update Firebase
+  if(db && !eventId.startsWith('local_')){
+    try{
+      const isGoing = _evGoingSet.has(eventId);
+      await db.collection('community_events').doc(eventId).update({
+        goingCount: firebase.firestore.FieldValue.increment(isGoing ? 1 : -1),
+        going: isGoing
+          ? firebase.firestore.FieldValue.arrayUnion(alias)
+          : firebase.firestore.FieldValue.arrayRemove(alias),
+      });
+    }catch(e){}
+  }
+
+  // Update button immediately
+  const btn = document.getElementById('ev-going-btn-'+eventId);
+  const cnt = document.getElementById('ev-going-cnt-'+eventId);
+  if(btn){
+    const isNowGoing = _evGoingSet.has(eventId);
+    btn.textContent = isNowGoing ? '✅ Going!' : '🙋 I\'m Going';
+    btn.className = 'ev-rsvp-btn' + (isNowGoing ? ' going' : '');
+    if(cnt) cnt.textContent = (parseInt(cnt.dataset.count||0) + (isNowGoing ? 1 : -1)) + ' going';
+  }
+}
+
+// ── DELETE EVENT ──
+async function deleteEvent(eventId){
+  if(!confirm('Delete this event?')) return;
+  if(db && !eventId.startsWith('local_')){
+    try{ await db.collection('community_events').doc(eventId).delete(); }catch(e){}
+  }
+  // Also remove from local
+  const local = JSON.parse(localStorage.getItem('nomad_local_events')||'[]');
+  localStorage.setItem('nomad_local_events', JSON.stringify(local.filter(e=>e.id!==eventId)));
+  showToast('Event deleted','warn');
+  loadCommunityEvents();
+}
+
+// ── COUNTDOWN ──
+function evCountdown(dateStr, timeStr){
+  const now  = new Date();
+  const evDt = new Date(dateStr + (timeStr ? 'T'+timeStr : 'T00:00'));
+  const diff = evDt - now;
+  if(diff < 0) return { text:'Past event', past:true };
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if(days === 0 && hours < 24) return { text: hours===0 ? 'Happening now! 🔥' : `In ${hours}h`, today:true };
+  if(days === 1) return { text:'Tomorrow!', soon:true };
+  if(days <= 7)  return { text:`In ${days} days`, soon:true };
+  return { text:`${days} days away`, past:false };
+}
+
+// ── FORMAT DATE ──
+function fmtEvDate(dateStr, timeStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  const dayName = d.toLocaleDateString('en-AU',{weekday:'long'});
+  const dateFormatted = d.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  return `${dayName}, ${dateFormatted}${timeStr ? ' · '+timeStr : ''}`;
+}
+
+// ── RENDER EVENT CARD ──
+function renderEventCard(ev, id){
+  const cfg = EV_CONFIG[ev.type] || EV_CONFIG.other;
+  const cd  = evCountdown(ev.date, ev.time);
+  const isGoing = _evGoingSet.has(id);
+  const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  const myAlias = bs.alias || bs.roadName || bs.name || '';
+  const isHost = ev.host === myAlias || id.startsWith('local_');
+  const goingCount = ev.goingCount || (ev.going?.length)||0;
+  const avatarLetter = ev.host ? ev.host.charAt(0).toUpperCase() : '?';
+
+  if(_evFilter !== 'all' && ev.type !== _evFilter) return '';
+  if(cd.past && !document.getElementById('show-past-events')?.checked) return `
+    <div class="event-card ev-past ${cfg.cardClass}" style="opacity:.35">
+      <div class="ev-type-badge ${cfg.badgeClass}">${cfg.icon} ${cfg.label}</div>
+      <div class="ev-title">${ev.title}</div>
+      <div class="ev-meta"><span class="ev-meta-item">📍 ${ev.location}</span><span class="ev-meta-item" style="color:var(--red)">Passed</span></div>
+    </div>
+  `;
+
+  return `
+    <div class="event-card ${cfg.cardClass} ${cd.today?'ev-today':''} ${cd.past?'ev-past':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+        <div class="ev-type-badge ${cfg.badgeClass}">${cfg.icon} ${cfg.label}</div>
+        <div class="ev-countdown" style="color:${cd.past?'var(--muted)':cd.today?'var(--amber)':'var(--forest-hi)'}">
+          ${cd.today?'🔥 ':cd.soon?'⚡ ':'📅 '}${cd.text}
+        </div>
+      </div>
+
+      <div class="ev-title">${ev.title}</div>
+
+      <div class="ev-meta">
+        <span class="ev-meta-item">📍 ${ev.location}</span>
+        <span class="ev-meta-item">📅 ${fmtEvDate(ev.date, ev.time)}</span>
+        ${ev.maxPpl ? `<span class="ev-meta-item">👥 Max ${ev.maxPpl}</span>` : ''}
+      </div>
+
+      <div class="ev-desc">${ev.desc.replace(/\n/g,'<br>')}</div>
+
+      ${ev.contact ? `<div class="ev-contact">📲 ${ev.contact}</div>` : ''}
+
+      <div class="ev-host">
+        <div class="ev-host-avatar">${avatarLetter}</div>
+        <div>
+          <div class="ev-host-name">${ev.host}</div>
+          <div class="ev-host-sub">Hosting this event · NOMAD crew</div>
+        </div>
+      </div>
+
+      <div class="ev-actions">
+        ${!cd.past ? `
+          <button class="ev-rsvp-btn ${isGoing?'going':''}" id="ev-going-btn-${id}"
+            onclick="toggleGoing('${id}', ${isGoing})">
+            ${isGoing ? '✅ Going!' : '🙋 I\'m Going'}
+          </button>
+        ` : ''}
+        <div class="ev-rsvp-count" id="ev-going-cnt-${id}" data-count="${goingCount}">
+          🤝 ${goingCount} going
+        </div>
+        ${isHost ? `<button class="bdel" onclick="deleteEvent('${id}')" style="margin-left:auto">✕ Delete</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── LOAD EVENTS ──
+async function loadCommunityEvents(){
+  const feed = $('comm-events-feed');
+  if(!feed) return;
+  feed.innerHTML = '<div style="text-align:center;padding:24px"><div class="spinner"></div><div style="margin-top:8px;font-size:13px;color:var(--muted);font-family:var(--ffq)">Loading events...</div></div>';
+
+  let events = [];
+
+  // Load from Firebase
+  if(db){
+    try{
+      const snap = await db.collection('community_events')
+        .orderBy('timestamp','desc')
+        .limit(40)
+        .get();
+      snap.forEach(doc=>{
+        events.push({ id: doc.id, ...doc.data() });
+      });
+    }catch(e){
+      console.log('Events load error:', e.message);
+    }
+  }
+
+  // Merge local events
+  const local = JSON.parse(localStorage.getItem('nomad_local_events')||'[]');
+  local.forEach(ev=>{
+    if(!events.find(e=>e.id===ev.id)) events.push(ev);
+  });
+
+  // Sort by date (upcoming first, past last)
+  const now = new Date();
+  events.sort((a,b)=>{
+    const da = new Date(a.date||'2000-01-01');
+    const db2 = new Date(b.date||'2000-01-01');
+    const aUp = da >= now;
+    const bUp = db2 >= now;
+    if(aUp && !bUp) return -1;
+    if(!aUp && bUp) return 1;
+    if(aUp && bUp) return da - db2;
+    return db2 - da;
+  });
+
+  // Filter
+  const filtered = _evFilter === 'all' ? events : events.filter(e=>e.type===_evFilter);
+
+  if(filtered.length === 0){
+    feed.innerHTML = `
+      <div class="empty-comm">
+        <div class="ei">🎉</div>
+        <h3>NO EVENTS YET</h3>
+        <p style="font-size:14px;line-height:1.65;color:var(--muted)">Be the first to host something.<br>Get the NOMAD crew together.</p>
+      </div>
+    `;
+    return;
+  }
+
+  feed.innerHTML = filtered.map(ev=>renderEventCard(ev, ev.id)).filter(Boolean).join('');
+}
+
+// ── HOOK INTO COMMUNITY TAB SWITCH ──
+const _origShowCommTab = showCommTab;
+showCommTab = function(tab, btn){
+  _origShowCommTab(tab, btn);
+  if(tab==='events'){
+    // Show events panel (it won't be in the original array)
+    document.querySelectorAll('[id$="-panel"]').forEach(p=>{
+      if(p.id.startsWith('comm-')) p.style.display='none';
+    });
+    const ep = $('comm-events-panel');
+    if(ep) ep.style.display='block';
+    loadCommunityEvents();
+  }
+};
+
+// ── SET DEFAULT DATE TO TOMORROW ──
+document.addEventListener('DOMContentLoaded',()=>{
+  const dateInput = $('cev-date');
+  if(dateInput){
+    const tmr = new Date();
+    tmr.setDate(tmr.getDate()+1);
+    dateInput.min = new Date().toISOString().split('T')[0];
+    dateInput.value = tmr.toISOString().split('T')[0];
+  }
+});
+
+console.log('🎉 NOMAD Events System loaded ✓');
+
+// ══════════════════════════════════════════════════════════
+// NOMAD COMMUNITY v2 — No user setup required
+// Group Chat · Live Presence · Events · Admin Panel
+// Chris (Breezusmoon) is the admin
+// ══════════════════════════════════════════════════════════
+
+// ── ADMIN CONFIG ──
+const NOMAD_ADMIN_ALIAS = 'Breezusmoon'; // Change to your road name
+const NOMAD_ADMIN_KEY = 'nomad-admin-breezus-2026'; // Secret key stored locally
+let _isAdmin = false;
+
+// ── FIREBASE BAKED-IN CONFIG ──
+// Chris: paste YOUR Firebase config object here (replace the placeholder)
+// Users NEVER see this — it's baked in by you once
+const NOMAD_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBbWG-yRHotQLfIXFMde-bd0m08p7vVSmo",
+  authDomain: "nomad-vanlife.firebaseapp.com",
+  projectId: "nomad-vanlife",
+  storageBucket: "nomad-vanlife.firebasestorage.app",
+  messagingSenderId: "707063849952",
+  appId: "1:707063849952:web:8f6794ca222792975c4185",
+  measurementId: "G-13LFBCK6JJ"
+};
+// Example (uncomment and fill in after creating your Firebase project):
+// const NOMAD_FIREBASE_CONFIG = {
+//   apiKey: "AIza...",
+//   authDomain: "nomad-vanlife.firebaseapp.com",
+//   projectId: "nomad-vanlife",
+//   storageBucket: "nomad-vanlife.appspot.com",
+//   messagingSenderId: "123456789",
+//   appId: "1:123456789:web:abc123"
+// };
+
+// ── BOOT SEQUENCE ──
+let _nomadDb = null;
+let _presenceInterval = null;
+let _chatUnsub = null;
+let _myAlias = '';
+let _mySessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+
+function bootCommunity(){
+  // Load saved alias
+  const bs = JSON.parse(localStorage.getItem('nm5_basics5')||'{}');
+  _myAlias = localStorage.getItem('nomad_alias') || bs.roadName || bs.alias || bs.name || '';
+
+  // Check admin
+  _isAdmin = localStorage.getItem('nomad_admin_key') === NOMAD_ADMIN_KEY ||
+             _myAlias === NOMAD_ADMIN_ALIAS;
+
+  // Try to connect Firebase
+  let connected = false;
+
+  // 1. Try baked-in config first
+  if(NOMAD_FIREBASE_CONFIG){
+    connected = tryFirebaseConnect(NOMAD_FIREBASE_CONFIG);
+  }
+
+  // 2. Fall back to saved config from old setup
+  if(!connected){
+    const saved = get('fb_config');
+    if(saved) connected = tryFirebaseConnect(saved);
+  }
+
+  if(connected){
+    showCommunityUI();
+  } else {
+    // Show offline placeholder
+    const offlineMsg = document.getElementById('comm-offline-msg');
+    const mainUI = document.getElementById('comm-main');
+    if(offlineMsg) offlineMsg.style.display = 'block';
+    if(mainUI) mainUI.style.display = 'none';
+  }
+}
+
+function tryFirebaseConnect(config){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(config);
+    _nomadDb = firebase.firestore();
+    // Also set global db for legacy code
+    db = _nomadDb;
+    return true;
+  }catch(e){
+    console.log('Firebase connect failed:', e.message);
+    return false;
+  }
+}
+
+function showCommunityUI(){
+  const offlineMsg = document.getElementById('comm-offline-msg');
+  const mainUI = document.getElementById('comm-main');
+  if(offlineMsg) offlineMsg.style.display = 'none';
+  if(mainUI) mainUI.style.display = 'block';
+
+  // Set up alias input
+  const aliasInput = document.getElementById('comm-alias-input');
+  if(aliasInput && _myAlias) aliasInput.value = _myAlias;
+  updateMyAlias();
+
+  // Show admin tab if admin
+  if(_isAdmin){
+    const adminBtn = document.getElementById('comm-admin-tab-btn');
+    if(adminBtn) adminBtn.style.display = 'block';
+    const adminBadge = document.getElementById('comm-admin-badge');
+    if(adminBadge) adminBadge.style.display = 'inline-block';
+  }
+
+  // Register presence
+  registerPresence();
+  startPresenceHeartbeat();
+
+  // Load initial tab (chat)
+  showCommTab('chat', document.querySelector('#comm-tab-btns .cf-btn'));
+}
+
+// ══════════════════════════════════════════════════════════
+// ALIAS MANAGEMENT
+// ══════════════════════════════════════════════════════════
+
+function updateMyAlias(){
+  const input = document.getElementById('comm-alias-input');
+  const val = input?.value?.trim() || '';
+  const preview = document.getElementById('comm-alias-preview');
+  const badgeWrap = document.getElementById('comm-alias-badge-wrap');
+  const avatar = document.getElementById('comm-my-avatar');
+
+  if(preview && val){
+    preview.textContent = '🚐 ' + val;
+    if(badgeWrap) badgeWrap.style.display = 'block';
+  }
+  if(avatar && val) avatar.textContent = val.charAt(0).toUpperCase();
+}
+
+async function saveAndBroadcastAlias(){
+  const input = document.getElementById('comm-alias-input');
+  const alias = input?.value?.trim();
+  if(!alias){ showToast('Enter your road name first','warn'); return; }
+
+  _myAlias = alias;
+  localStorage.setItem('nomad_alias', alias);
+
+  // Check admin
+  if(alias === NOMAD_ADMIN_ALIAS || localStorage.getItem('nomad_admin_key') === NOMAD_ADMIN_KEY){
+    _isAdmin = true;
+    const adminBtn = document.getElementById('comm-admin-tab-btn');
+    if(adminBtn) adminBtn.style.display = 'block';
+    const adminBadge = document.getElementById('comm-admin-badge');
+    if(adminBadge) adminBadge.style.display = 'inline-block';
+  }
+
+  updateMyAlias();
+  registerPresence();
+  showToast('🚐 Road name saved — the crew can see you now!');
+}
+
+// ══════════════════════════════════════════════════════════
+// LIVE PRESENCE — who's on the road right now
+// ══════════════════════════════════════════════════════════
+
+async function registerPresence(){
+  if(!_nomadDb || !_myAlias) return;
+  try{
+    await _nomadDb.collection('nomad_presence').doc(_mySessionId).set({
+      alias: _myAlias,
+      isAdmin: _isAdmin,
+      lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      sessionId: _mySessionId,
+    });
+  }catch(e){}
+}
+
+function startPresenceHeartbeat(){
+  if(_presenceInterval) clearInterval(_presenceInterval);
+  // Update presence every 60s
+  _presenceInterval = setInterval(registerPresence, 60000);
+  // Watch presence collection
+  watchPresence();
+}
+
+function watchPresence(){
+  if(!_nomadDb) return;
+  // Listen to presence updates (users active in last 5 mins)
+  _nomadDb.collection('nomad_presence')
+    .orderBy('lastSeen','desc')
+    .limit(50)
+    .onSnapshot(snap=>{
+      const now = Date.now();
+      const active = [];
+      snap.forEach(doc=>{
+        const d = doc.data();
+        const lastSeen = d.lastSeen?.toMillis?.() || 0;
+        // Active = seen in last 5 minutes
+        if(now - lastSeen < 300000 && d.alias){
+          active.push({alias: d.alias, isAdmin: d.isAdmin, sessionId: d.sessionId});
+        }
+      });
+      renderPresence(active);
+    }, err=>console.log('Presence error:', err.message));
+}
+
+function renderPresence(users){
+  const list = document.getElementById('comm-presence-list');
+  const count = document.getElementById('comm-online-count');
+  const admCount = document.getElementById('adm-online');
+
+  if(count) count.textContent = users.length;
+  if(admCount) admCount.textContent = users.length;
+
+  if(!list) return;
+  if(users.length === 0){
+    list.innerHTML = '<div style="font-size:13px;color:var(--faint);font-family:var(--ffq)">No one online right now</div>';
+    return;
+  }
+
+  list.innerHTML = users.map(u=>`
+    <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;font-family:var(--ffq);color:var(--sand)">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0"></div>
+      ${u.alias}${u.isAdmin?' ⭐':''}${u.sessionId===_mySessionId?' (you)':''}
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// GROUP CHAT
+// ══════════════════════════════════════════════════════════
+
+async function sendChatMsg(){
+  const input = document.getElementById('comm-chat-input');
+  const msg = input?.value?.trim();
+  if(!msg) return;
+  if(!_myAlias){ showToast('Set your road name first 🚐','warn'); return; }
+  if(!_nomadDb){ showToast('Community not connected','warn'); return; }
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  try{
+    await _nomadDb.collection('nomad_chat').add({
+      alias: _myAlias,
+      msg,
+      isAdmin: _isAdmin,
+      sessionId: _mySessionId,
+      ts: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: new Date().toISOString(),
+    });
+  }catch(e){
+    showToast('Could not send — check connection','error');
+    input.value = msg;
+  }
+}
+
+function startChatListener(){
+  if(!_nomadDb) return;
+  if(_chatUnsub) _chatUnsub();
+
+  _chatUnsub = _nomadDb.collection('nomad_chat')
+    .orderBy('ts','asc')
+    .limitToLast(80)
+    .onSnapshot(snap=>{
+      const msgs = [];
+      snap.forEach(doc=>msgs.push({id:doc.id,...doc.data()}));
+      renderChatMessages(msgs);
+    }, err=>console.log('Chat error:', err.message));
+}
+
+function renderChatMessages(msgs){
+  const feed = document.getElementById('comm-chat-messages');
+  if(!feed) return;
+
+  const wasAtBottom = feed.scrollHeight - feed.scrollTop <= feed.clientHeight + 60;
+
+  if(msgs.length === 0){
+    feed.innerHTML = `
+      <div style="text-align:center;padding:30px;color:var(--faint)">
+        <div style="font-size:36px;margin-bottom:8px">🔥</div>
+        <div style="font-family:var(--ffq);font-size:13px;font-weight:700">Be the first to say something</div>
+      </div>
+    `;
+    return;
+  }
+
+  feed.innerHTML = msgs.map(m=>{
+    const isMe = m.sessionId === _mySessionId || m.alias === _myAlias;
+    const isBroadcast = m.isBroadcast;
+    const tsStr = m.createdAt ? new Date(m.createdAt).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}) : '';
+
+    if(isBroadcast) return `
+      <div style="text-align:center;margin:6px 0">
+        <div style="background:rgba(224,122,63,.12);border:1.5px solid rgba(224,122,63,.28);border-radius:14px;padding:10px 14px;display:inline-block;max-width:90%">
+          <div style="font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--orange-hi);font-family:var(--ffq);margin-bottom:4px">⭐ NOMAD HQ</div>
+          <div style="font-size:14px;color:var(--cream);font-weight:500">${m.msg}</div>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div style="display:flex;flex-direction:${isMe?'row-reverse':'row'};gap:8px;align-items:flex-end">
+        ${!isMe?`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--orange));display:flex;align-items:center;justify-content:center;font-family:var(--ffd);font-size:14px;font-weight:700;color:var(--cream);flex-shrink:0">${m.alias?.charAt(0)?.toUpperCase()||'?'}</div>`:''}
+        <div style="max-width:72%;min-width:60px">
+          ${!isMe?`<div style="font-size:10px;font-weight:800;color:${m.isAdmin?'var(--amber)':'var(--muted)'};font-family:var(--ffq);margin-bottom:3px;padding-left:2px">${m.alias||'Nomad'}${m.isAdmin?' ⭐':''}</div>`:''}
+          <div style="background:${isMe?'linear-gradient(135deg,var(--orange),#b05828)':'rgba(255,255,255,.08)'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;color:${isMe?'var(--cream)':'var(--cream)'};font-size:14px;font-weight:400;line-height:1.5;word-break:break-word">${m.msg}</div>
+          <div style="font-size:10px;color:var(--faint);font-family:var(--ffq);margin-top:2px;${isMe?'text-align:right;padding-right:2px':'padding-left:2px'}">${tsStr}${m.isAdmin&&!isMe?' · Admin':''}</div>
+        </div>
+        ${isMe?`<div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--teal));display:flex;align-items:center;justify-content:center;font-family:var(--ffd);font-size:14px;font-weight:700;color:var(--cream);flex-shrink:0">${_myAlias?.charAt(0)?.toUpperCase()||'M'}</div>`:''}
+      </div>
+      ${_isAdmin&&!isMe?`<div style="text-align:center;margin:-4px 0 4px"><button onclick="adminDeleteMsg('${m.id}')" style="background:none;border:none;cursor:pointer;font-size:10px;color:var(--faint);font-family:var(--ffq)">✕ delete</button></div>`:''}
+    `;
+  }).join('');
+
+  if(wasAtBottom) feed.scrollTop = feed.scrollHeight;
+}
+
+// ══════════════════════════════════════════════════════════
+// ADMIN FUNCTIONS
+// ══════════════════════════════════════════════════════════
+
+async function adminBroadcast(){
+  const input = document.getElementById('adm-broadcast');
+  const msg = input?.value?.trim();
+  if(!msg){ showToast('Enter a message first','warn'); return; }
+  if(!_isAdmin){ showToast('Admin only','error'); return; }
+
+  try{
+    await _nomadDb.collection('nomad_chat').add({
+      alias: 'NOMAD HQ',
+      msg,
+      isAdmin: true,
+      isBroadcast: true,
+      sessionId: 'admin',
+      ts: firebase.firestore.FieldValue.serverTimestamp(),
+      createdAt: new Date().toISOString(),
+    });
+    input.value = '';
+    showToast('📢 Broadcast sent to everyone!');
+  }catch(e){ showToast('Could not send','error'); }
+}
+
+async function adminDeleteMsg(msgId){
+  if(!_isAdmin || !_nomadDb) return;
+  try{
+    await _nomadDb.collection('nomad_chat').doc(msgId).delete();
+  }catch(e){ showToast('Could not delete','error'); }
+}
+
+async function adminClearChat(){
+  if(!_isAdmin) return;
+  if(!confirm('Delete all chat messages? This cannot be undone.')) return;
+  try{
+    const snap = await _nomadDb.collection('nomad_chat').limit(100).get();
+    const batch = _nomadDb.batch();
+    snap.forEach(doc=>batch.delete(doc.ref));
+    await batch.commit();
+    showToast('Chat cleared','warn');
+  }catch(e){ showToast('Could not clear','error'); }
+}
+
+async function adminRefreshStats(){
+  if(!_nomadDb) return;
+  try{
+    const [spots,events,presence] = await Promise.all([
+      _nomadDb.collection('community_spots').get(),
+      _nomadDb.collection('community_events').get(),
+      _nomadDb.collection('nomad_presence').get(),
+    ]);
+    const setEl = (id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
+    setEl('adm-users', presence.size);
+    setEl('adm-spots', spots.size);
+    setEl('adm-events', events.size);
+    showToast('Stats refreshed');
+  }catch(e){ showToast('Could not load stats','error'); }
+}
+
+async function loadAdminUsers(){
+  if(!_nomadDb || !_isAdmin) return;
+  const list = document.getElementById('adm-user-list');
+  if(!list) return;
+  try{
+    const snap = await _nomadDb.collection('nomad_presence').orderBy('lastSeen','desc').limit(100).get();
+    const now = Date.now();
+    const users = [];
+    snap.forEach(doc=>{ const d=doc.data(); users.push({...d, id:doc.id}); });
+    const el_count = document.getElementById('adm-users');
+    if(el_count) el_count.textContent = users.length;
+    list.innerHTML = users.length===0
+      ? '<div style="color:var(--muted);font-size:14px;padding:10px 0">No users yet</div>'
+      : users.map(u=>{
+          const lastSeen = u.lastSeen?.toMillis?.() || 0;
+          const online = now - lastSeen < 300000;
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:7px;height:7px;border-radius:50%;background:${online?'var(--green)':'rgba(255,255,255,.2)'}"></div>
+                <div style="font-weight:700;font-size:14px;color:var(--cream)">${u.alias||'Anonymous'}${u.isAdmin?' ⭐':''}</div>
+              </div>
+              <div style="font-size:11px;color:var(--faint);font-family:var(--ffq)">${online?'Online now':lastSeen?new Date(lastSeen).toLocaleDateString('en-AU'):'Unknown'}</div>
+            </div>
+          `;
+        }).join('');
+  }catch(e){ if(list) list.innerHTML='<div style="color:var(--muted)">Could not load users</div>'; }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMMUNITY SPOTS — updated to use _nomadDb
+// ══════════════════════════════════════════════════════════
+
+async function loadCommunitySpots(){
+  if(!_nomadDb) return;
+  const feed = document.getElementById('comm-spots-list');
+  if(!feed) return;
+  feed.innerHTML = '<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';
+  try{
+    const snap = await _nomadDb.collection('community_spots').orderBy('timestamp','desc').limit(30).get();
+    const items = [];
+    snap.forEach(doc=>items.push({id:doc.id,...doc.data()}));
+    const count = document.getElementById('csp-count');
+    if(count) count.textContent = items.length + ' spots';
+    if(items.length===0){
+      feed.innerHTML='<div class="empty-comm"><div class="ei">📍</div><h3>NO SPOTS YET</h3><p>Share the first spot!</p></div>';
+      return;
+    }
+    feed.innerHTML = items.map(s=>`
+      <div class="comm-spot">
+        <div class="cs-name">${s.name||'Unnamed spot'}</div>
+        <div class="cs-meta">
+          <span class="cs-alias">🚐 ${s.alias||'A Nomad'}</span>
+          <span>${s.location||''}</span>
+          <span>${s.type==='free'?'🏕️ Free camp':s.type==='surf'?'🌊 Surf':s.type==='hike'?'🥾 Hike':'💰 Paid'}</span>
+        </div>
+        <div class="cs-tags">
+          <span class="tag ${s.signal==='full'?'tf':'tm'}">📶 ${s.signal||'unknown'}</span>
+          <span class="tag ${s.fire==='y'?'ts':'tm'}">${s.fire==='y'?'🔥 Fires OK':'No fires'}</span>
+          <span class="tag ${s.water==='y'?'tc':'tm'}">${s.water==='y'?'💧 Water':'No water'}</span>
+        </div>
+        ${s.notes?`<div class="cs-body">${s.notes}</div>`:''}
+        <div class="cs-actions">
+          <button class="like-btn ${(s.likedBy||[]).includes(_mySessionId)?'liked':''}" onclick="likePost('community_spots','${s.id}',this)">
+            🤙 ${s.likes||0}
+          </button>
+          ${_isAdmin?`<button class="bdel" onclick="adminDeleteCommunityPost('community_spots','${s.id}')">✕</button>`:''}
+        </div>
+      </div>
+    `).join('');
+  }catch(e){ feed.innerHTML='<div class="empty-comm"><div class="ei">📍</div><h3>COULD NOT LOAD</h3></div>'; }
+}
+
+async function logAndShareSpot(){
+  if(!_myAlias){ showToast('Set your road name first','warn'); return; }
+  const name = $('csp-name')?.value?.trim();
+  const loc  = $('csp-loc')?.value?.trim();
+  if(!name||!loc){ showToast('Name and location required','warn'); return; }
+  const spot = {
+    name, location:loc,
+    type: $('csp-type')?.value||'free',
+    rating: ($('csp-rating')?.value||'').length,
+    signal: $('csp-signal')?.value||'ok',
+    fire: $('csp-fire')?.value||'n',
+    water: $('csp-water')?.value||'n',
+    notes: $('csp-notes')?.value?.trim()||'',
+    alias: _myAlias,
+    likes: 0, likedBy: [],
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: new Date().toISOString(),
+  };
+  if(!_nomadDb){ showToast('Community not connected','warn'); return; }
+  try{
+    await _nomadDb.collection('community_spots').add(spot);
+    ['csp-name','csp-loc','csp-notes'].forEach(id=>{ if($(id)) $(id).value=''; });
+    showToast('📍 Spot shared with the road family!');
+    loadCommunitySpots();
+  }catch(e){ showToast('Could not share — check connection','error'); }
+}
+
+async function shareToMoments(){
+  if(!_myAlias){ showToast('Set your road name first','warn'); return; }
+  const txt = $('cmom-txt')?.value?.trim();
+  if(!txt){ showToast('Write something first!','warn'); return; }
+  const moment = {
+    text: txt, location: $('cmom-loc')?.value?.trim()||'',
+    tag: $('cmom-tag')?.value||'van',
+    alias: _myAlias, likes: 0, likedBy: [],
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: new Date().toISOString(),
+  };
+  if(!_nomadDb){ showToast('Community not connected','warn'); return; }
+  try{
+    await _nomadDb.collection('community_moments').add(moment);
+    $('cmom-txt').value=''; if($('cmom-loc')) $('cmom-loc').value='';
+    showToast('🌊 Moment shared!');
+    loadCommunityMoments();
+  }catch(e){ showToast('Could not share','error'); }
+}
+
+async function loadCommunityMoments(){
+  if(!_nomadDb) return;
+  const feed = document.getElementById('comm-moments-list');
+  if(!feed) return;
+  feed.innerHTML = '<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';
+  try{
+    const snap = await _nomadDb.collection('community_moments').orderBy('timestamp','desc').limit(30).get();
+    const items = []; snap.forEach(doc=>items.push({id:doc.id,...doc.data()}));
+    const count = document.getElementById('cmom-count');
+    if(count) count.textContent = items.length + ' moments';
+    if(items.length===0){ feed.innerHTML='<div class="empty-comm"><div class="ei">🌊</div><h3>NO MOMENTS YET</h3></div>'; return; }
+    const tags = {van:'🚐',surf:'🌊',nature:'🌲',food:'🍳',sunset:'🌅',star:'⭐'};
+    feed.innerHTML = items.map(m=>`
+      <div class="comm-card">
+        <div class="cc-name">${tags[m.tag]||'🌅'} ${m.alias||'A Nomad'}</div>
+        <div class="cc-body">${m.text}</div>
+        ${m.location?`<div style="font-size:12px;color:var(--muted);font-family:var(--ffq);margin-bottom:10px">📍 ${m.location}</div>`:''}
+        <div class="cs-actions">
+          <button class="like-btn ${(m.likedBy||[]).includes(_mySessionId)?'liked':''}" onclick="likePost('community_moments','${m.id}',this)">🤙 ${m.likes||0}</button>
+          ${_isAdmin?`<button class="bdel" onclick="adminDeleteCommunityPost('community_moments','${m.id}')">✕</button>`:''}
+        </div>
+      </div>
+    `).join('');
+  }catch(e){ feed.innerHTML='<div class="empty-comm"><div class="ei">🌊</div><h3>COULD NOT LOAD</h3></div>'; }
+}
+
+async function postToBoard(){
+  if(!_myAlias){ showToast('Set your road name first','warn'); return; }
+  const msg = $('cboard-msg')?.value?.trim();
+  if(!msg){ showToast('Write something first!','warn'); return; }
+  const post = {
+    msg, tag: $('cboard-tag')?.value||'tip',
+    alias: _myAlias, likes: 0, likedBy: [],
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: new Date().toISOString(),
+  };
+  if(!_nomadDb){ showToast('Community not connected','warn'); return; }
+  try{
+    await _nomadDb.collection('community_board').add(post);
+    $('cboard-msg').value='';
+    showToast('📋 Posted to the board!');
+    loadCommunityBoard();
+  }catch(e){ showToast('Could not post','error'); }
+}
+
+async function loadCommunityBoard(){
+  if(!_nomadDb) return;
+  const feed = document.getElementById('comm-board-list');
+  if(!feed) return;
+  feed.innerHTML = '<div style="text-align:center;padding:20px"><div class="spinner"></div></div>';
+  try{
+    const snap = await _nomadDb.collection('community_board').orderBy('timestamp','desc').limit(30).get();
+    const items = []; snap.forEach(doc=>items.push({id:doc.id,...doc.data()}));
+    const count = document.getElementById('cboard-count');
+    if(count) count.textContent = items.length + ' posts';
+    if(items.length===0){ feed.innerHTML='<div class="empty-comm"><div class="ei">📋</div><h3>NOTHING YET</h3></div>'; return; }
+    const tagIcons = {tip:'💡',ask:'❓',warn:'⚠️',sell:'💰',find:'🔍'};
+    feed.innerHTML = items.map(p=>`
+      <div class="comm-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span class="tag tfu">${tagIcons[p.tag]||'💡'} ${p.tag||'tip'}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--cream)">${p.alias||'A Nomad'}</span>
+        </div>
+        <div class="cc-body">${p.msg}</div>
+        <div class="cs-actions">
+          <button class="like-btn ${(p.likedBy||[]).includes(_mySessionId)?'liked':''}" onclick="likePost('community_board','${p.id}',this)">🤙 ${p.likes||0}</button>
+          ${_isAdmin?`<button class="bdel" onclick="adminDeleteCommunityPost('community_board','${p.id}')">✕</button>`:''}
+        </div>
+      </div>
+    `).join('');
+  }catch(e){ feed.innerHTML='<div class="empty-comm"><div class="ei">📋</div><h3>COULD NOT LOAD</h3></div>'; }
+}
+
+// ── LIKES ──
+async function likePost(collection, id, btn){
+  if(!_nomadDb) return;
+  const liked = btn.classList.contains('liked');
+  try{
+    await _nomadDb.collection(collection).doc(id).update({
+      likes: firebase.firestore.FieldValue.increment(liked?-1:1),
+      likedBy: liked ? firebase.firestore.FieldValue.arrayRemove(_mySessionId)
+                     : firebase.firestore.FieldValue.arrayUnion(_mySessionId),
+    });
+    btn.classList.toggle('liked');
+    const cur = parseInt(btn.textContent.match(/\d+/)?.[0]||0);
+    btn.textContent = '🤙 '+(cur+(liked?-1:1));
+    if(!liked){ btn.style.transform='scale(1.3)'; setTimeout(()=>btn.style.transform='',300); }
+  }catch(e){}
+}
+
+async function adminDeleteCommunityPost(collection, id){
+  if(!_isAdmin||!_nomadDb) return;
+  if(!confirm('Delete this post?')) return;
+  try{ await _nomadDb.collection(collection).doc(id).delete(); showToast('Deleted','warn'); }catch(e){}
+}
+
+// ── OVERRIDE SHOW COMM TAB ──
+function showCommTab(tab, btn){
+  document.querySelectorAll('#comm-tab-btns .cf-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+
+  ['chat','spots','moments','events','board','admin'].forEach(t=>{
+    const el = document.getElementById('comm-'+t+'-panel');
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+  });
+
+  if(tab==='chat')    startChatListener();
+  if(tab==='spots')   loadCommunitySpots();
+  if(tab==='moments') loadCommunityMoments();
+  if(tab==='events')  loadCommunityEvents();
+  if(tab==='board')   loadCommunityBoard();
+  if(tab==='admin')   { adminRefreshStats(); loadAdminUsers(); }
+}
+
+// ── INIT ON COMMUNITY TAB OPEN ──
+function initCommunityTab(){
+  if(!document.getElementById('comm-main')) return;
+  // Already connected
+  if(_nomadDb && document.getElementById('comm-main').style.display==='block') return;
+  bootCommunity();
+}
+
+// ── ADMIN UNLOCK (secret: type 'nomadadmin' in chat) ──
+document.addEventListener('keydown', e=>{
+  if(e.target.id!=='comm-chat-input') return;
+  const val = e.target.value;
+  if(val.includes('nomadadmin')){
+    localStorage.setItem('nomad_admin_key', NOMAD_ADMIN_KEY);
+    _isAdmin = true;
+    e.target.value = '';
+    showToast('⭐ Admin mode unlocked!','info');
+    const adminBtn = document.getElementById('comm-admin-tab-btn');
+    if(adminBtn) adminBtn.style.display = 'block';
+  }
+});
+
+console.log('🌐 NOMAD Community v2 loaded — Chat · Presence · Events · Admin ✓');
 </script>
 </html>

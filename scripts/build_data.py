@@ -79,9 +79,11 @@ def fsq():
                     if loc: t['addr:suburb'] = loc[:60]
                     t['src'] = 'fsq'
                     out.append(['f' + pid, round(lat, 5), round(lon, 5), t]); break
-        print('FSQ places:', len(out)); return out
+        print('FSQ places:', len(out)); os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write(f'FSQ release {rel}: {len(rows)} rows, {len(out)} places\n'); return out
     except Exception as e:
-        print('FSQ skipped:', e); return []
+        print('FSQ skipped:', e)
+        import traceback; os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write('FSQ skipped:\n'+traceback.format_exc())
+        return []
 
 def kind(t):
     if t.get('tourism') in ('camp_site', 'caravan_site') or t.get('highway') == 'rest_area': return 'sleep'

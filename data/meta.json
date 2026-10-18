@@ -1,1 +1,1 @@
-{"v": "20261018", "tile": 0.5, "count": 119698, "tiles": 1306, "sources": ["OpenStreetMap (ODbL)", "Foursquare Open Source Places (Apache 2.0)"]}
+{"v": "20261018", "tile": 0.5, "count": 111275, "osm": 111275, "groups": {"sleep": 12650, "toilet": 20843, "water": 13163, "wash": 4344, "leisure": 6754, "power": 3270, "food": 48551, "fish": 5248}, "extra": 0, "tiles": 1571, "sources": ["OpenStreetMap (ODbL)", "Overture Maps Foundation (CDLA-Permissive / ODbL)"]}

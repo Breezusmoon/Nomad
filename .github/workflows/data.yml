@@ -1,0 +1,24 @@
+name: Build places database
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 16 * * 0'   # every Monday 2am Brisbane
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install duckdb==1.1.3
+      - run: python scripts/build_data.py
+      - name: Commit data
+        run: |
+          git config user.name "nomad-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "Weekly places database update"
+          git push

@@ -1,0 +1,6 @@
+FSQ skipped:
+Traceback (most recent call last):
+  File "/home/runner/work/Nomad/Nomad/scripts/build_data.py", line 66, in fsq
+    rel = sorted(p.find('s:Prefix', ns).text for p in ET.fromstring(xml).findall('s:CommonPrefixes', ns))[-1]
+          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+IndexError: list index out of range

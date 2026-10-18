@@ -21,4 +21,4 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add data
           git diff --cached --quiet || git commit -m "Weekly places database update"
-          git push
+          git pull --rebase origin main && git push

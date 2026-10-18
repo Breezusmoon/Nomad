@@ -2,7 +2,7 @@ name: Build places database
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 16 * * 0'   # every Monday 2am Brisbane
+    - cron: '0 16 * * 0,3'   # Mon + Thu 2am Brisbane
 permissions:
   contents: write
 jobs:

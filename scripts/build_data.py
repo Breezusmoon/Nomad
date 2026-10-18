@@ -28,22 +28,50 @@ def post(url, q, tries=3):
             print('  retry', url, e); time.sleep(20 * (t + 1))
     return None
 
-def osm():
+def fetch(tags):
+    q = '[out:json][timeout:900][maxsize:1073741824];area["ISO3166-1"="AU"][admin_level=2]->.au;(' + ''.join(f'nwr{t}(area.au);' for t in tags) + ');out center tags;'
+    for ep in OVERPASS:
+        data = post(ep, q)
+        if data and data.get('elements'): return data['elements']
+    return []
+
+def matches(t, filt):
+    for k, op, v in re.findall(r'\["([^"]+)"(?:(=|~)"([^"]*)")?\]', filt):
+        x = t.get(k)
+        if x is None or (op == '=' and x != v) or (op == '~' and not re.search(v, x)): return False
+    return True
+
+def old_entries(tags):
     out = []
+    try:
+        for fn in os.listdir(f'{OUT}/t'):
+            for e in json.load(open(f'{OUT}/t/{fn}'))['e']:
+                if e[0][0] in 'nwr' and any(matches(e[3], f) for f in tags): out.append(e)
+    except Exception: pass
+    return out
+
+def osm():
+    out, counts = [], {}
+    try: prevg = json.load(open(f'{OUT}/meta.json')).get('groups', {})
+    except Exception: prevg = {}
     for g, tags in GROUPS.items():
-        q = '[out:json][timeout:900][maxsize:1073741824];area["ISO3166-1"="AU"][admin_level=2]->.au;(' + ''.join(f'nwr{t}(area.au);' for t in tags) + ');out center tags;'
-        data = None
-        for ep in OVERPASS:
-            data = post(ep, q)
-            if data and data.get('elements'): break
-        els = (data or {}).get('elements', [])
+        els = fetch(tags)
+        if not els:  # whole-group query failed: try each tag on its own
+            print(f'OSM {g}: group query empty, splitting'); time.sleep(30)
+            for t in tags: els += fetch([t])
         print(f'OSM {g}: {len(els)}')
+        if len(els) < 0.6 * prevg.get(g, 0) or (not els):
+            keep = old_entries(tags)
+            print(f'OSM {g}: looks incomplete, keeping {len(keep)} previous entries')
+            if len(keep) > len(els):
+                counts[g] = len(keep); out += keep; continue
+        counts[g] = len(els)
         for e in els:
             lat = e.get('lat', (e.get('center') or {}).get('lat')); lon = e.get('lon', (e.get('center') or {}).get('lon'))
             t = e.get('tags') or {}
             if lat is None or t.get('access') in ('private', 'no', 'customers'): continue
             out.append([e['type'][0] + str(e['id']), round(lat, 5), round(lon, 5), {k: v[:200] for k, v in t.items() if KEEP.match(k)}])
-    return out
+    return out, counts
 
 OV_MAP = [  # Overture Maps places (Meta, Microsoft, Foursquare + more; CDLA/ODbL)
  (r'laundr|dry_clean', {'shop': 'laundry'}),
@@ -91,7 +119,8 @@ def kind(t):
     return t.get('amenity') or t.get('shop') or t.get('leisure') or t.get('man_made') or 'x'
 
 def main():
-    o = osm()
+    o, counts = osm()
+    if counts.get('sleep', 0) < 3000: raise SystemExit(f'Camps pull failed ({counts.get("sleep")}) — keeping old data')
     try: prev = json.load(open(f'{OUT}/meta.json')).get('osm', 0)
     except Exception: prev = 0
     if len(o) < max(20000, prev*0.93): raise SystemExit(f'OSM pull looks incomplete ({len(o)}) — keeping old data')
@@ -116,7 +145,7 @@ def main():
     for k, v in tiles.items():
         with open(f'{OUT}/t/{k}.json', 'w') as fh: json.dump({'e': v}, fh, separators=(',', ':'), ensure_ascii=False)
     v = datetime.datetime.utcnow().strftime('%Y%m%d')
-    with open(f'{OUT}/meta.json', 'w') as fh: json.dump({'v': v, 'tile': TILE, 'count': len(merged), 'osm': len(o), 'extra': len(merged)-len(o), 'tiles': len(tiles), 'sources': ['OpenStreetMap (ODbL)', 'Overture Maps Foundation (CDLA-Permissive / ODbL)']}, fh)
+    with open(f'{OUT}/meta.json', 'w') as fh: json.dump({'v': v, 'tile': TILE, 'count': len(merged), 'osm': len(o), 'groups': counts, 'extra': len(merged)-len(o), 'tiles': len(tiles), 'sources': ['OpenStreetMap (ODbL)', 'Overture Maps Foundation (CDLA-Permissive / ODbL)']}, fh)
     print('Wrote', len(tiles), 'tiles')
 
 if __name__ == '__main__': main()

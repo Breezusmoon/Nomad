@@ -1,5 +1,5 @@
 /* NOMAD service worker — keeps the app shell available when signal drops */
-const CACHE = 'nomad-v2-3-0';
+const CACHE = 'nomad-v2-4-0';
 const SHELL = ['./', 'index.html', 'manifest.json', 'logo.webp', 'logo-sm.webp', 'scene.webp', 'banner.webp', 'merch.webp', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));
@@ -13,7 +13,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) {
     // Cache fonts and Leaflet so the app still looks right offline; never cache live data APIs.
-    if (/fonts\.(googleapis|gstatic)\.com|unpkg\.com\/leaflet/.test(req.url)) {
+    if (/fonts\.(googleapis|gstatic)\.com|unpkg\.com\/(leaflet|maplibre)/.test(req.url)) {
       e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res; })));
     }
     return;

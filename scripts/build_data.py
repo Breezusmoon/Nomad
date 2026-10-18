@@ -93,12 +93,17 @@ def overture():
         rels = sorted(p.find('s:Prefix', ns).text for p in ET.fromstring(xml).findall('s:CommonPrefixes', ns))
         rel = rels[-1]; print('Overture release', rel)
         con = duckdb.connect(); con.execute("INSTALL httpfs; LOAD httpfs; SET s3_region='us-west-2';")
-        rows = con.execute(f"""SELECT id, names.primary AS name, (bbox.ymin+bbox.ymax)/2 AS lat, (bbox.xmin+bbox.xmax)/2 AS lon, categories.primary AS cat,
-              addresses[1].freeform AS addr, addresses[1].locality AS loc
-            FROM read_parquet('s3://overturemaps-us-west-2/{rel}theme=places/type=place/*', hive_partitioning=1)
-            WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 AND confidence >= 0.55
-              AND names.primary IS NOT NULL AND categories.primary IS NOT NULL
-              AND regexp_matches(categories.primary, '(laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
+        src = f"read_parquet('s3://overturemaps-us-west-2/{rel}theme=places/type=place/*', hive_partitioning=1)"
+        cols = {r[0] for r in con.execute(f"DESCRIBE SELECT * FROM {src}").fetchall()}
+        print('Overture columns:', sorted(cols))
+        catx = 'categories.primary' if 'categories' in cols else 'taxonomy.primary' if 'taxonomy' in cols else 'basic_category'
+        addx = "addresses[1].freeform AS addr, addresses[1].locality AS loc" if 'addresses' in cols else "NULL AS addr, NULL AS loc"
+        confx = "AND confidence >= 0.55" if 'confidence' in cols else ""
+        rows = con.execute(f"""SELECT id, names.primary AS name, (bbox.ymin+bbox.ymax)/2 AS lat, (bbox.xmin+bbox.xmax)/2 AS lon, {catx} AS cat, {addx}
+            FROM {src}
+            WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 {confx}
+              AND names.primary IS NOT NULL AND {catx} IS NOT NULL
+              AND regexp_matches({catx}, '(laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
         out = []
         for pid, name, lat, lon, cat, addr, loc in rows:
             for rx, tags in OV_MAP:
@@ -108,7 +113,7 @@ def overture():
                     if loc: t['addr:suburb'] = loc[:60]
                     t['src'] = 'ovt'
                     out.append(['f' + str(pid)[:24], round(lat, 5), round(lon, 5), t]); break
-        os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write(f'Overture {rel}: {len(out)} places\n')
+        os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write(f'Overture {rel} ({catx}): {len(out)} places\n')
         print('Overture places:', len(out)); return out
     except Exception as e:
         import traceback; print('Overture skipped:', e); os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write('Overture skipped:\n'+traceback.format_exc()); return []

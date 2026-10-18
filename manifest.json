@@ -1,24 +1,17 @@
 {
-  "name": "Nomad Van Life OS",
+  "name": "NOMAD · Van Life OS",
   "short_name": "NOMAD",
-  "description": "The ultimate van life operating system — weather, solar, budget, community and more.",
-  "start_url": ".",
+  "description": "Free camps, toilets, water, weather, solar and fishing for van life in Australia.",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#17120d",
-  "theme_color": "#17120d",
   "orientation": "portrait",
+  "background_color": "#0D0B08",
+  "theme_color": "#0D0B08",
+  "categories": ["travel", "navigation", "lifestyle"],
   "icons": [
-    {
-      "src": "assets/logo/nomad-icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "assets/logo/nomad-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

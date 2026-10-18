@@ -45,45 +45,45 @@ def osm():
             out.append([e['type'][0] + str(e['id']), round(lat, 5), round(lon, 5), {k: v[:200] for k, v in t.items() if KEEP.match(k)}])
     return out
 
-FSQ_MAP = [  # (label regex, tags)
- (r'Laundromat|Laundry Service', {'shop': 'laundry'}),
- (r'Electric Vehicle Charging', {'amenity': 'charging_station'}),
- (r'> Library$|^Library$', {'amenity': 'library'}),
- (r'Public Bathroom|Restroom', {'amenity': 'toilets'}),
- (r'Supermarket|Grocery Store', {'shop': 'supermarket'}),
- (r'Fast Food', {'amenity': 'fast_food'}),
- (r'Caf[eé]|Coffee Shop', {'amenity': 'cafe'}),
- (r'RV Park|Caravan Park', {'tourism': 'caravan_site', 'fee': 'yes'}),
- (r'Fishing Store|Bait Shop', {'shop': 'fishing'}),
- (r'Boat Launch', {'leisure': 'slipway'}),
- (r'> Pier$', {'man_made': 'pier'}),
+OV_MAP = [  # Overture Maps places (Meta, Microsoft, Foursquare + more; CDLA/ODbL)
+ (r'laundr|dry_clean', {'shop': 'laundry'}),
+ (r'ev_charging|charging_station', {'amenity': 'charging_station'}),
+ (r'^library', {'amenity': 'library'}),
+ (r'toilet|restroom', {'amenity': 'toilets'}),
+ (r'supermarket|grocery', {'shop': 'supermarket'}),
+ (r'fast_food', {'amenity': 'fast_food'}),
+ (r'^cafe|coffee', {'amenity': 'cafe'}),
+ (r'rv_park|caravan', {'tourism': 'caravan_site', 'fee': 'yes'}),
+ (r'fishing|bait', {'shop': 'fishing'}),
+ (r'boat_ramp|boat_launch', {'leisure': 'slipway'}),
 ]
-def fsq():
+def overture():
     try:
         import duckdb
-        xml = urllib.request.urlopen('https://fsq-os-places-us-east-1.s3.amazonaws.com/?list-type=2&prefix=release/dt%3D&delimiter=/', timeout=60).read()
+        xml = urllib.request.urlopen('https://overturemaps-us-west-2.s3.amazonaws.com/?list-type=2&prefix=release/&delimiter=/', timeout=60).read()
         ns = {'s': 'http://s3.amazonaws.com/doc/2006-03-01/'}
-        rel = sorted(p.find('s:Prefix', ns).text for p in ET.fromstring(xml).findall('s:CommonPrefixes', ns))[-1]
-        print('FSQ release', rel)
-        con = duckdb.connect(); con.execute("INSTALL httpfs; LOAD httpfs; SET s3_region='us-east-1';")
-        rows = con.execute(f"""SELECT fsq_place_id, name, latitude, longitude, address, locality, array_to_string(fsq_category_labels,'|') AS labs
-            FROM read_parquet('s3://fsq-os-places-us-east-1/{rel}places/parquet/*.parquet')
-            WHERE country='AU' AND date_closed IS NULL AND latitude IS NOT NULL AND name IS NOT NULL
-              AND regexp_matches(array_to_string(fsq_category_labels,'|'), '(Laundromat|Laundry Service|Electric Vehicle Charging|Library|Public Bathroom|Restroom|Supermarket|Grocery Store|Fast Food|Caf|Coffee Shop|RV Park|Caravan Park|Fishing Store|Bait Shop|Boat Launch|Pier)')""").fetchall()
+        rels = sorted(p.find('s:Prefix', ns).text for p in ET.fromstring(xml).findall('s:CommonPrefixes', ns))
+        rel = rels[-1]; print('Overture release', rel)
+        con = duckdb.connect(); con.execute("INSTALL httpfs; LOAD httpfs; SET s3_region='us-west-2';")
+        rows = con.execute(f"""SELECT id, names.primary AS name, (bbox.ymin+bbox.ymax)/2 AS lat, (bbox.xmin+bbox.xmax)/2 AS lon, categories.primary AS cat,
+              addresses[1].freeform AS addr, addresses[1].locality AS loc
+            FROM read_parquet('s3://overturemaps-us-west-2/{rel}theme=places/type=place/*', hive_partitioning=1)
+            WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 AND confidence >= 0.55
+              AND names.primary IS NOT NULL AND categories.primary IS NOT NULL
+              AND regexp_matches(categories.primary, '(laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
         out = []
-        for pid, name, lat, lon, addr, loc, labs in rows:
-            for rx, tags in FSQ_MAP:
-                if any(re.search(rx, l) for l in labs.split('|')):
+        for pid, name, lat, lon, cat, addr, loc in rows:
+            for rx, tags in OV_MAP:
+                if re.search(rx, cat):
                     t = dict(tags); t['name'] = name[:120]
                     if addr: t['addr:street'] = addr[:120]
                     if loc: t['addr:suburb'] = loc[:60]
-                    t['src'] = 'fsq'
-                    out.append(['f' + pid, round(lat, 5), round(lon, 5), t]); break
-        print('FSQ places:', len(out)); os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write(f'FSQ release {rel}: {len(rows)} rows, {len(out)} places\n'); return out
+                    t['src'] = 'ovt'
+                    out.append(['f' + str(pid)[:24], round(lat, 5), round(lon, 5), t]); break
+        os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write(f'Overture {rel}: {len(out)} places\n')
+        print('Overture places:', len(out)); return out
     except Exception as e:
-        print('FSQ skipped:', e)
-        import traceback; os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write('FSQ skipped:\n'+traceback.format_exc())
-        return []
+        import traceback; print('Overture skipped:', e); os.makedirs(OUT, exist_ok=True); open(f'{OUT}/build_log.txt','w').write('Overture skipped:\n'+traceback.format_exc()); return []
 
 def kind(t):
     if t.get('tourism') in ('camp_site', 'caravan_site') or t.get('highway') == 'rest_area': return 'sleep'
@@ -92,8 +92,10 @@ def kind(t):
 
 def main():
     o = osm()
-    if len(o) < 20000: raise SystemExit(f'OSM pull looks incomplete ({len(o)}) — keeping old data')
-    f = fsq()
+    try: prev = json.load(open(f'{OUT}/meta.json')).get('osm', 0)
+    except Exception: prev = 0
+    if len(o) < max(20000, prev*0.93): raise SystemExit(f'OSM pull looks incomplete ({len(o)}) — keeping old data')
+    f = overture()
     grid = {}
     for e in o:
         grid.setdefault((kind(e[3]), round(e[1], 3), round(e[2], 3)), []).append(e)
@@ -114,7 +116,7 @@ def main():
     for k, v in tiles.items():
         with open(f'{OUT}/t/{k}.json', 'w') as fh: json.dump({'e': v}, fh, separators=(',', ':'), ensure_ascii=False)
     v = datetime.datetime.utcnow().strftime('%Y%m%d')
-    with open(f'{OUT}/meta.json', 'w') as fh: json.dump({'v': v, 'tile': TILE, 'count': len(merged), 'tiles': len(tiles), 'sources': ['OpenStreetMap (ODbL)', 'Foursquare Open Source Places (Apache 2.0)']}, fh)
+    with open(f'{OUT}/meta.json', 'w') as fh: json.dump({'v': v, 'tile': TILE, 'count': len(merged), 'osm': len(o), 'extra': len(merged)-len(o), 'tiles': len(tiles), 'sources': ['OpenStreetMap (ODbL)', 'Overture Maps Foundation (CDLA-Permissive / ODbL)']}, fh)
     print('Wrote', len(tiles), 'tiles')
 
 if __name__ == '__main__': main()

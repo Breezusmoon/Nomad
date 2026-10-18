@@ -1,13 +1,1 @@
-Overture skipped:
-Traceback (most recent call last):
-  File "/home/runner/work/Nomad/Nomad/scripts/build_data.py", line 96, in overture
-    rows = con.execute(f"""SELECT id, names.primary AS name, (bbox.ymin+bbox.ymax)/2 AS lat, (bbox.xmin+bbox.xmax)/2 AS lon, categories.primary AS cat,
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-duckdb.duckdb.BinderException: Binder Error: Referenced table "categories" not found!
-Candidate tables: "read_parquet"
-LINE 5: ..., names.primary AS name, (bbox.ymin+bbox.ymax)/2 AS lat, (bbox.xmin+bbox.xmax)/2 AS lon, categories.primary AS cat,
-              addresses[1].freeform AS addr, addresses[1].locality AS loc
-            FROM read_parquet('s3://overturemaps-us-west-2/release/2026-09-23.1/theme=places/type=place/*', hive_partitioning=1)
-            WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 AND confidence >= 0.55
-              AND names.primary IS NOT NULL AND categories.primary IS NOT NULL
-                                                  ^
+Overture release/2026-09-23.1/ (taxonomy.primary): 50899 places

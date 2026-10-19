@@ -8,12 +8,17 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install duckdb==1.1.3
+      - name: Australia map extract (Geofabrik) + osmium
+        run: |
+          sudo apt-get install -y -qq osmium-tool > /dev/null
+          curl -sSfL --retry 3 -o au.osm.pbf https://download.geofabrik.de/australia-oceania/australia-latest.osm.pbf || rm -f au.osm.pbf
+          ls -la au.osm.pbf || true
       - run: python scripts/build_data.py
       - name: Commit data
         run: |

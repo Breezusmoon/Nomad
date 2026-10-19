@@ -87,6 +87,51 @@ OV_MAP = [  # Overture Maps places (Meta, Microsoft, Foursquare + more; CDLA/ODb
  (r'fishing|bait', {'shop': 'fishing'}),
  (r'boat_ramp|boat_launch', {'leisure': 'slipway'}),
 ]
+def osm_pbf(path='au.osm.pbf'):
+    """Fast path: whole-of-Australia extract from Geofabrik + osmium (minutes, no rate limits)."""
+    import subprocess
+    if not os.path.exists(path): print('No PBF extract, using Overpass'); return None
+    exprs = set()
+    for tags in GROUPS.values():
+        for f in tags:
+            k, op, v = re.findall(r'\["([^"]+)"(?:(=|~)"([^"]*)")?\]', f)[0]
+            if op == '=': exprs.add(f'nwr/{k}={v}')
+            elif op == '~':
+                m = re.match(r'^\^\((.*)\)\$$', v)
+                exprs.add(f'nwr/{k}=' + ','.join(m.group(1).split('|')) if m else f'nwr/{k}')
+            else: exprs.add(f'nwr/{k}')
+    t0 = time.time()
+    subprocess.run(['osmium', 'tags-filter', path, *sorted(exprs), '-o', 'f.osm.pbf', '--overwrite'], check=True)
+    subprocess.run(['osmium', 'export', 'f.osm.pbf', '-f', 'geojsonseq', '-u', 'type_id', '-o', 'f.geojsonseq', '--overwrite'], check=True)
+    print(f'osmium filter+export {time.time()-t0:.0f}s')
+    def centre(g):
+        t, c = g['type'], g['coordinates']
+        if t == 'Point': return c[1], c[0]
+        if t == 'LineString': p = c[len(c)//2]; return p[1], p[0]
+        if t == 'MultiLineString': p = c[0][len(c[0])//2]; return p[1], p[0]
+        ring = c[0] if t == 'Polygon' else c[0][0]
+        return sum(p[1] for p in ring)/len(ring), sum(p[0] for p in ring)/len(ring)
+    out, counts, seen = [], {g: 0 for g in GROUPS}, set()
+    for line in open('f.geojsonseq', encoding='utf-8'):
+        line = line.strip().lstrip('\x1e')
+        if not line: continue
+        try: ft = json.loads(line)
+        except Exception: continue
+        t = {k: str(v) for k, v in (ft.get('properties') or {}).items() if not k.startswith('@')}
+        if not t or t.get('access') in ('private', 'no', 'customers'): continue
+        grp = next((g for g, tags in GROUPS.items() if any(matches(t, f) for f in tags)), None)
+        if not grp: continue
+        fid = str(ft.get('id') or (ft.get('properties') or {}).get('@id') or '')
+        if not fid or fid in seen: continue
+        seen.add(fid)
+        try: lat, lon = centre(ft['geometry'])
+        except Exception: continue
+        if not (-44.5 < lat < -9 and 112 < lon < 154.5): continue
+        counts[grp] += 1
+        out.append([fid[0] + fid[1:].lstrip('0'), round(lat, 5), round(lon, 5), {k: v[:200] for k, v in t.items() if KEEP.match(k)}])
+    for g, n in counts.items(): print(f'OSM {g}: {n}')
+    return out, counts
+
 def overture():
     try:
         import duckdb
@@ -126,7 +171,9 @@ def kind(t):
     return t.get('amenity') or t.get('shop') or t.get('leisure') or t.get('man_made') or 'x'
 
 def main():
-    o, counts = osm()
+    t0 = time.time()
+    o, counts = osm_pbf() or osm()
+    print(f'OSM done in {time.time()-t0:.0f}s')
     if counts.get('sleep', 0) < 3000: raise SystemExit(f'Camps pull failed ({counts.get("sleep")}) — keeping old data')
     try: prev = json.load(open(f'{OUT}/meta.json')).get('osm', 0)
     except Exception: prev = 0

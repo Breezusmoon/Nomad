@@ -2,7 +2,7 @@ name: Fuel prices
 on:
   workflow_dispatch:
   schedule:
-    - cron: '23 */3 * * *'
+    - cron: '7,37 * * * *'
 permissions:
   contents: write
 concurrency:

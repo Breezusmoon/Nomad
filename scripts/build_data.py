@@ -80,7 +80,7 @@ OV_MAP = [  # Overture Maps places (Meta, Microsoft, Foursquare + more; CDLA/ODb
  (r'towing|tow_truck|roadside', {'office': 'towing'}),
  (r'tire|tyre', {'shop': 'tyres'}),
  (r'auto_parts|automotive_parts|car_parts', {'shop': 'car_parts'}),
- (r'rv_|recreational_vehicle|caravan_repair|motorhome', {'shop': 'car_repair', 'rv': 'yes'}),
+ (r'rv_repair|rv_dealer|recreational_vehicle_repair|recreational_vehicle_dealer|caravan_repair|motorhome_repair', {'shop': 'car_repair', 'rv': 'yes'}),
  (r'automotive_repair|auto_repair|car_repair|mechanic|auto_electric|automotive_service|auto_body|smash', {'shop': 'car_repair'}),
  (r'laundr|dry_clean', {'shop': 'laundry'}),
  (r'ev_charging|charging_station', {'amenity': 'charging_station'}),
@@ -156,7 +156,7 @@ def overture():
             FROM {src}
             WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 {confx}
               AND names.primary IS NOT NULL AND {catx} IS NOT NULL
-              AND regexp_matches({catx}, '(towing|tow_truck|roadside|tire|tyre|auto_parts|automotive|auto_repair|car_repair|mechanic|auto_electric|auto_body|recreational_vehicle|rv_|laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
+              AND regexp_matches({catx}, '(towing|tow_truck|roadside|tire|tyre|auto_parts|automotive|auto_repair|car_repair|mechanic|auto_electric|auto_body|recreational_vehicle_repair|rv_repair|caravan_repair|laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
         out = []
         for pid, name, lat, lon, cat, addr, loc in rows:
             for rx, tags in OV_MAP:

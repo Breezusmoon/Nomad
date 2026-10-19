@@ -1,5 +1,5 @@
 /* NOMAD service worker — keeps the app shell available when signal drops */
-const CACHE = 'nomad-v2-30-0';
+const CACHE = 'nomad-v2-31-0';
 const SHELL = ['./', 'index.html', 'manifest.json', 'logo.webp', 'logo-sm.webp', 'scene.webp', 'banner.webp', 'merch.webp', 'av-kombi.webp', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => null)))).then(() => self.skipWaiting()));

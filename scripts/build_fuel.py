@@ -170,8 +170,8 @@ def wa_direct():
     for (lat, lng), (n, b, p) in per.items(): add(lat, lng, n, b, p, None, 'WA')
     if per: ATTR.append('WA prices: FuelWatch, Government of Western Australia, CC BY 4.0')
 
-run('WA', wa)
-if not STATES.get('WA'): run('WA (FuelWatch direct)', wa_direct)
+run('WA (FuelWatch)', wa_direct)
+if not STATES.get('WA'): run('WA (FuelWide backup)', wa)
 if os.environ.get('NSW_FUEL_KEY') and os.environ.get('NSW_FUEL_SECRET'): run('NSW/ACT/TAS', nsw, os.environ['NSW_FUEL_KEY'], os.environ['NSW_FUEL_SECRET'])
 else: LOG.append('NSW/ACT/TAS: no key set')
 if os.environ.get('QLD_FUEL_TOKEN'): run('QLD', fpd, 'https://fppdirectapi-prod.fuelpricesqld.com.au', os.environ['QLD_FUEL_TOKEN'], 1, 'QLD', 'QLD prices: Queensland Government Fuel Price Reporting')

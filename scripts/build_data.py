@@ -16,9 +16,10 @@ GROUPS = {
  'power': ['["amenity"="charging_station"]','["amenity"="device_charging_station"]','["amenity"="library"]'],
  'food': ['["amenity"~"^(fast_food|cafe)$"]["name"]','["amenity"="restaurant"]["name"]','["shop"="supermarket"]'],
  'fuel': ['["amenity"="fuel"]'],
+ 'wifi': ['["internet_access"~"^(wlan|yes|wifi|public)$"]'],
  'fish': ['["leisure"="fishing"]','["sport"="fishing"]','["man_made"="pier"]','["leisure"="slipway"]','["natural"="beach"]["name"]','["shop"="fishing"]'],
 }
-KEEP = re.compile(r'^(name|tourism|highway|amenity|man_made|leisure|sport|shop|natural|craft|fee|charge|opening_hours|toilets|shower|showers|drinking_water|water_point|sanitary_dump_station|power_supply|electricity|openfire|fireplace|waste_disposal|bbq|dog|maxstay|max_stay|wheelchair|changing_table|hot_water|unisex|description|website|contact:website|phone|contact:phone|operator|brand|addr:housenumber|addr:street|addr:suburb|addr:city|camping|overnight|access|caravan|motorhome|self_service|capacity|socket:[^:]+)$')
+KEEP = re.compile(r'^(internet_access|internet_access:fee|internet_access:ssid|name|tourism|highway|amenity|man_made|leisure|sport|shop|natural|craft|fee|charge|opening_hours|toilets|shower|showers|drinking_water|water_point|sanitary_dump_station|power_supply|electricity|openfire|fireplace|waste_disposal|bbq|dog|maxstay|max_stay|wheelchair|changing_table|hot_water|unisex|description|website|contact:website|phone|contact:phone|operator|brand|addr:housenumber|addr:street|addr:suburb|addr:city|camping|overnight|access|caravan|motorhome|self_service|capacity|socket:[^:]+)$')
 
 def post(url, q, tries=3):
     for t in range(tries):

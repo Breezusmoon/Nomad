@@ -16,11 +16,12 @@ GROUPS = {
  'power': ['["amenity"="charging_station"]','["amenity"="device_charging_station"]','["amenity"="library"]'],
  'food': ['["amenity"~"^(fast_food|cafe)$"]["name"]','["amenity"="restaurant"]["name"]','["shop"="supermarket"]'],
  'fuel': ['["amenity"="fuel"]'],
+ 'health': ['["amenity"="hospital"]','["healthcare"="hospital"]','["amenity"="clinic"]','["amenity"="doctors"]','["amenity"="pharmacy"]'],
  'auto': ['["shop"="car_repair"]','["shop"="tyres"]','["shop"="car_parts"]','["craft"="mechanic"]','["office"="towing"]','["shop"="caravan"]'],
  'wifi': ['["internet_access"~"^(wlan|yes|wifi|public)$"]'],
  'fish': ['["leisure"="fishing"]','["sport"="fishing"]','["man_made"="pier"]','["leisure"="slipway"]','["natural"="beach"]["name"]','["shop"="fishing"]'],
 }
-KEEP = re.compile(r'^(rv|service:vehicle:[^:]+|internet_access|internet_access:fee|internet_access:ssid|name|tourism|highway|amenity|man_made|leisure|sport|shop|natural|craft|fee|charge|opening_hours|toilets|shower|showers|drinking_water|water_point|sanitary_dump_station|power_supply|electricity|openfire|fireplace|waste_disposal|bbq|dog|maxstay|max_stay|wheelchair|changing_table|hot_water|unisex|description|website|contact:website|phone|contact:phone|operator|brand|addr:housenumber|addr:street|addr:suburb|addr:city|camping|overnight|access|caravan|motorhome|self_service|capacity|socket:[^:]+)$')
+KEEP = re.compile(r'^(emergency|healthcare|healthcare:speciality|dispensing|rv|service:vehicle:[^:]+|internet_access|internet_access:fee|internet_access:ssid|name|tourism|highway|amenity|man_made|leisure|sport|shop|natural|craft|fee|charge|opening_hours|toilets|shower|showers|drinking_water|water_point|sanitary_dump_station|power_supply|electricity|openfire|fireplace|waste_disposal|bbq|dog|maxstay|max_stay|wheelchair|changing_table|hot_water|unisex|description|website|contact:website|phone|contact:phone|operator|brand|addr:housenumber|addr:street|addr:suburb|addr:city|camping|overnight|access|caravan|motorhome|self_service|capacity|socket:[^:]+)$')
 
 def post(url, q, tries=3):
     for t in range(tries):
@@ -77,6 +78,9 @@ def osm():
     return out, counts
 
 OV_MAP = [  # Overture Maps places (Meta, Microsoft, Foursquare + more; CDLA/ODbL)
+ (r'^hospital|emergency_room|urgent_care', {'amenity': 'hospital'}),
+ (r'^pharmacy|drugstore|chemist', {'amenity': 'pharmacy'}),
+ (r'medical_center|medical_centre|general_practitioner|family_practice|doctor', {'amenity': 'doctors'}),
  (r'towing|tow_truck|roadside', {'office': 'towing'}),
  (r'(^|_)(tire|tyre)s?(_|$)', {'shop': 'tyres'}),
  (r'auto_parts|automotive_parts|car_parts', {'shop': 'car_parts'}),
@@ -156,7 +160,7 @@ def overture():
             FROM {src}
             WHERE bbox.xmin BETWEEN 112 AND 154.5 AND bbox.ymin BETWEEN -44.5 AND -9 {confx}
               AND names.primary IS NOT NULL AND {catx} IS NOT NULL
-              AND regexp_matches({catx}, '(towing|tow_truck|roadside|(^|_)(tire|tyre)s?(_|$)|auto_parts|automotive|auto_repair|car_repair|mechanic|auto_electric|auto_body|recreational_vehicle_repair|rv_repair|caravan_repair|laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
+              AND regexp_matches({catx}, '(hospital|emergency_room|urgent_care|pharmacy|drugstore|chemist|medical_cent|general_practitioner|family_practice|doctor|towing|tow_truck|roadside|(^|_)(tire|tyre)s?(_|$)|auto_parts|automotive|auto_repair|car_repair|mechanic|auto_electric|auto_body|recreational_vehicle_repair|rv_repair|caravan_repair|laundr|dry_clean|ev_charging|charging_station|^library|toilet|restroom|supermarket|grocery|fast_food|^cafe|coffee|rv_park|caravan|fishing|bait|boat_ramp|boat_launch)')""").fetchall()
         out = []
         for pid, name, lat, lon, cat, addr, loc in rows:
             for rx, tags in OV_MAP:

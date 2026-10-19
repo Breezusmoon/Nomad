@@ -142,7 +142,36 @@ def run(name, fn, *a):
     try: fn(*a); LOG.append(f'{name}: {len(S) - n0} stations')
     except Exception as e: LOG.append(f'{name} FAILED: {e}\n' + traceback.format_exc()[-600:])
 
+def wa_direct():
+    # official FuelWatch site API (JSON) per fuel type, then RSS (metro) as a last resort
+    per = {}
+    for ft in ('ULP', 'PUP', '98R', 'DSL', 'BDL', 'LPG', 'E85'):
+        try: j = get(f'https://www.fuelwatch.wa.gov.au/api/sites?fuelType={ft}')
+        except Exception as e: LOG.append(f'  FuelWatch api {ft}: {e}'); continue
+        rows = find_list(j) or []
+        if ft == 'ULP': LOG.append('FuelWatch sample: ' + json.dumps(rows[:1])[:600])
+        for r in rows:
+            lat = pick(r, r'^lat'); lng = pick(r, r'^(lon|lng)'); pr = pick(r, r'price')
+            dv = dollars(pr); g = grade({'ULP':'91','PUP':'95','98R':'98','DSL':'diesel','BDL':'premium diesel','LPG':'lpg','E85':'e85'}[ft])
+            if lat is None or not dv: continue
+            k = (round(float(lat), 4), round(float(lng), 4))
+            e = per.setdefault(k, [pick(r, r'(siteName|tradingName|^name)'), pick(r, r'brand'), {}]); e[2][g] = dv
+    if not per:
+        import xml.etree.ElementTree as ET
+        for prod, g in ((1, 'U91'), (2, 'P95'), (4, 'DSL'), (5, 'LPG'), (6, 'P98')):
+            req = urllib.request.Request(f'https://www.fuelwatch.wa.gov.au/fuelwatch/fuelWatchRSS?Product={prod}', headers={'User-Agent': 'Mozilla/5.0 NOMAD-fuel'})
+            root = ET.fromstring(urllib.request.urlopen(req, timeout=60).read())
+            for it in root.iter('item'):
+                f = {c.tag: (c.text or '') for c in it}
+                dv = dollars(f.get('price'))
+                if not dv or not f.get('latitude'): continue
+                k = (round(float(f['latitude']), 4), round(float(f['longitude']), 4))
+                e = per.setdefault(k, [f.get('trading-name'), f.get('brand'), {}]); e[2][g] = dv
+    for (lat, lng), (n, b, p) in per.items(): add(lat, lng, n, b, p, None, 'WA')
+    if per: ATTR.append('WA prices: FuelWatch, Government of Western Australia, CC BY 4.0')
+
 run('WA', wa)
+if not STATES.get('WA'): run('WA (FuelWatch direct)', wa_direct)
 if os.environ.get('NSW_FUEL_KEY') and os.environ.get('NSW_FUEL_SECRET'): run('NSW/ACT/TAS', nsw, os.environ['NSW_FUEL_KEY'], os.environ['NSW_FUEL_SECRET'])
 else: LOG.append('NSW/ACT/TAS: no key set')
 if os.environ.get('QLD_FUEL_TOKEN'): run('QLD', fpd, 'https://fppdirectapi-prod.fuelpricesqld.com.au', os.environ['QLD_FUEL_TOKEN'], 1, 'QLD', 'QLD prices: Queensland Government Fuel Price Reporting')
@@ -152,6 +181,7 @@ else: LOG.append('SA: no token set')
 
 print('\n'.join(LOG))
 open(f'{OUT}/log.txt', 'w').write('\n'.join(LOG) + '\n')
-if not S: raise SystemExit('No fuel prices fetched — keeping the previous file')
+if not S:
+    print('No fuel prices fetched — keeping the previous file'); raise SystemExit(0)
 json.dump({'v': int(time.time()), 'n': len(S), 'states': STATES, 'attr': ATTR, 's': S}, open(f'{OUT}/fuel.json', 'w'), separators=(',', ':'), ensure_ascii=False)
 print('Wrote', len(S), 'stations', STATES)

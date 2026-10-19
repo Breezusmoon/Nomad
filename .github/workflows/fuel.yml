@@ -15,7 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Fetch prices
-        run: python3 scripts/build_fuel.py
+        run: |
+          mkdir -p out
+          curl -sfL "https://raw.githubusercontent.com/${{ github.repository }}/fuel/fuel.json" -o out/fuel.json || rm -f out/fuel.json
+          python3 scripts/build_fuel.py
         env:
           NSW_FUEL_KEY: ${{ secrets.NSW_FUEL_KEY }}
           NSW_FUEL_SECRET: ${{ secrets.NSW_FUEL_SECRET }}

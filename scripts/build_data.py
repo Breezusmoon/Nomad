@@ -15,6 +15,7 @@ GROUPS = {
  'leisure': ['["leisure"="fitness_station"]','["leisure"="pitch"]["sport"="fitness"]','["amenity"="bbq"]','["tourism"="picnic_site"]'],
  'power': ['["amenity"="charging_station"]','["amenity"="device_charging_station"]','["amenity"="library"]'],
  'food': ['["amenity"~"^(fast_food|cafe)$"]["name"]','["amenity"="restaurant"]["name"]','["shop"="supermarket"]'],
+ 'fuel': ['["amenity"="fuel"]'],
  'fish': ['["leisure"="fishing"]','["sport"="fishing"]','["man_made"="pier"]','["leisure"="slipway"]','["natural"="beach"]["name"]','["shop"="fishing"]'],
 }
 KEEP = re.compile(r'^(name|tourism|highway|amenity|man_made|leisure|sport|shop|natural|craft|fee|charge|opening_hours|toilets|shower|showers|drinking_water|water_point|sanitary_dump_station|power_supply|electricity|openfire|fireplace|waste_disposal|bbq|dog|maxstay|max_stay|wheelchair|changing_table|hot_water|unisex|description|website|contact:website|phone|contact:phone|operator|brand|addr:housenumber|addr:street|addr:suburb|addr:city|camping|overnight|access|caravan|motorhome|self_service|capacity|socket:[^:]+)$')
@@ -151,6 +152,8 @@ def main():
         with open(f'{OUT}/t/{k}.json', 'w') as fh: json.dump({'e': v}, fh, separators=(',', ':'), ensure_ascii=False)
     v = datetime.datetime.utcnow().strftime('%Y%m%d')
     with open(f'{OUT}/meta.json', 'w') as fh: json.dump({'v': v, 'tile': TILE, 'count': len(merged), 'osm': len(o), 'groups': counts, 'extra': len(merged)-len(o), 'tiles': len(tiles), 'sources': ['OpenStreetMap (ODbL)', 'Overture Maps Foundation (CDLA-Permissive / ODbL)']}, fh)
-    print('Wrote', len(tiles), 'tiles')
+    fu = [[e[1], e[2], e[3].get('name', '')[:60], (e[3].get('brand') or e[3].get('operator') or '')[:30]] for e in o if e[3].get('amenity') == 'fuel']
+    with open(f'{OUT}/fuel_osm.json', 'w') as fh: json.dump(fu, fh, separators=(',', ':'), ensure_ascii=False)
+    print('Wrote', len(tiles), 'tiles,', len(fu), 'servos')
 
 if __name__ == '__main__': main()

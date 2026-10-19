@@ -1,0 +1,32 @@
+name: Fuel prices
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 */3 * * *'
+permissions:
+  contents: write
+concurrency:
+  group: fuel
+  cancel-in-progress: false
+jobs:
+  fuel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch prices
+        run: python3 scripts/build_fuel.py
+        env:
+          NSW_FUEL_KEY: ${{ secrets.NSW_FUEL_KEY }}
+          NSW_FUEL_SECRET: ${{ secrets.NSW_FUEL_SECRET }}
+          QLD_FUEL_TOKEN: ${{ secrets.QLD_FUEL_TOKEN }}
+          SA_FUEL_TOKEN: ${{ secrets.SA_FUEL_TOKEN }}
+      - name: Publish to fuel branch (no history kept)
+        run: |
+          cd out
+          git init -q -b fuel
+          git config user.name "nomad-bot"
+          git config user.email "nomad-bot@users.noreply.github.com"
+          git add -A
+          git commit -qm "Fuel prices $(date -u +%FT%H:%MZ)"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" fuel

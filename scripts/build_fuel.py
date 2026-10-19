@@ -35,7 +35,7 @@ def dollars(v):
     if v <= 0 or v >= 9999: return None
     if v > 1000: v /= 1000      # tenths of a cent (QLD/SA)
     elif v > 20: v /= 100       # cents
-    return round(v, 3) if 0.8 < v < 6 else None
+    return round(v, 3) if 1.2 < v < 6 else None
 
 def add(lat, lng, name, brand, prices, ts, st):
     try: lat, lng = float(lat), float(lng)
@@ -153,7 +153,7 @@ def wa_direct():
         for r in rows:
             lat = pick(r, r'^lat'); lng = pick(r, r'^(lon|lng)'); pr = pick(r, r'price')
             dv = dollars(pr); g = grade({'ULP':'91','PUP':'95','98R':'98','DSL':'diesel','BDL':'premium diesel','LPG':'lpg','E85':'e85'}[ft])
-            if lat is None or not dv: continue
+            if lat is None or not dv or pick(r, r'outofsupply') is True: continue
             k = (round(float(lat), 4), round(float(lng), 4))
             e = per.setdefault(k, [pick(r, r'(siteName|tradingName|^name)'), pick(r, r'brand'), {}]); e[2][g] = dv
     if not per:

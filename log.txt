@@ -1,0 +1,5 @@
+FuelWatch sample: [{"id": 2406, "siteName": "Billabong Roadhouse", "address": {"id": 4539, "line1": "Lot 2 North West Coastal Hwy", "location": "MEADOW", "postCode": 6532, "state": "WA", "latitude": -26.816033, "longitude": 114.614261}, "product": {"shortName": "ULP", "isTruckStop": false, "priceToday": 195.0, "priceTomorrow": 195.0, "isTwoPrice": true, "isLowAromaticFuel": false, "isOutOfSupply": true}, "productFuelType": "ULP", "brandName": "IND", "isClosedNow": false, "isClosedAllDayTomorrow": false, "drivewayService": "None", "manned": true, "operates247": false, "membershipRequired": false, "entryPermitReq
+WA (FuelWatch): 967 stations
+NSW/ACT/TAS: no key set
+QLD: no token set
+SA: no token set

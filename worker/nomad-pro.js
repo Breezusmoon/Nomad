@@ -18,6 +18,7 @@
  *   POST /refresh {token}                     → {token,…}   renewals / cancellations
  *   POST /restore {key:'XXXX-XXXX-XXXX'}      → {token,…}   new phone
  *   POST /portal  {token}                     → {url}       manage / cancel subscription
+ *   GET  /hazards                             → live bushfire / emergency incidents (NSW RFS, QLD Fire, VicEmergency), cached 3 min
  *   GET  /met?lat=&lon=                       → MET Norway forecast   cached weather proxy (Australia only, ~1 km grid, free for commercial use)
  *   GET  /fuel?lat=&lng=                      → {v,s:[…]}   live government servo prices within ~150 km (refreshed every 2 min)
  */
@@ -51,6 +52,7 @@ export default {
         case '/portal': return json(await portal(env, body.token || ''));
         case '/fuel': return fuelHandler(env, url, cors);
         case '/met': return metHandler(url, cors);
+        case '/hazards': return hazardsHandler(url, cors);
         case '/': return json({ ok: true, service: 'nomad-pro', fuel: fuelStates(env) });
         default: return json({ error: 'not_found' }, 404);
       }
@@ -278,5 +280,66 @@ async function metHandler(url, cors) {
   if (MET_MEM.size > 500) MET_MEM.delete(MET_MEM.keys().next().value);
   MET_MEM.set(name, { body, until: now + ttl * 1000 });
   await c.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + ttl } })).catch(() => {});
+  return new Response(body, { headers: { ...hdr, 'X-Cache': 'MISS' } });
+}
+
+
+/* ── Live hazards: official state incident feeds, merged and cached for everyone ── */
+const HZ_FEEDS = {
+  nsw: 'https://www.rfs.nsw.gov.au/feeds/majorIncidents.json',            // NSW RFS, CC BY
+  qld: 'https://publiccontent-gis-psba-qld-gov-au.s3.amazonaws.com/content/Feeds/BushfireCurrentIncidents/bushfireAlert.json', // QLD Fire Dept, CC BY 4.0
+  vic: 'https://emergency.vic.gov.au/public/events-geojson.json'          // VicEmergency, State of Victoria, CC BY 3.0 AU
+};
+const HZ_TTL = 180, HZ_DROP = new Set(['webBody', 'incidentFeatures', 'cap', 'contact']);
+let HZ_MEM = null;
+function hzPoint(g) {
+  if (!g) return null;
+  if (g.type === 'Point' && Array.isArray(g.coordinates)) return g.coordinates;
+  if (g.type === 'GeometryCollection') { const p = (g.geometries || []).find(x => x && x.type === 'Point'); if (p) return p.coordinates; }
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9, any = false;
+  const walk = c => { if (typeof c[0] === 'number') { any = true; x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); } else c.forEach(walk); };
+  try { if (g.type === 'GeometryCollection') (g.geometries || []).forEach(x => x && x.coordinates && walk(x.coordinates)); else if (g.coordinates) walk(g.coordinates); } catch (e) {}
+  return any ? [(x0 + x1) / 2, (y0 + y1) / 2] : null;
+}
+function hzProps(p) {
+  const o = {};
+  for (const [k, v] of Object.entries(p || {})) {
+    if (HZ_DROP.has(k) || v == null) continue;
+    if (typeof v === 'string') o[k] = v.length > 1200 ? v.slice(0, 1200) : v;
+    else if (typeof v !== 'object') o[k] = v;
+  }
+  if (p && p.cap && typeof p.cap === 'object') { o.capEvent = p.cap.event; o.capSeverity = p.cap.severity; o.capSender = p.cap.senderName; }
+  return o;
+}
+async function hazardsHandler(url, cors) {
+  const hdr = { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' };
+  const raw = url.searchParams.get('raw');
+  if (raw && HZ_FEEDS[raw]) {
+    const r = await fetch(HZ_FEEDS[raw], { headers: { 'User-Agent': 'NOMAD-VanLifeOS/1.0 (nomadvanlifeos@gmail.com)', Accept: 'application/json' } });
+    const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (e) {}
+    const f = j && (j.features || j.items || j.incidents || j.data || []);
+    return new Response(JSON.stringify({ status: r.status, keys: j ? Object.keys(j) : null, count: Array.isArray(f) ? f.length : null, sample: Array.isArray(f) ? f.slice(0, 3) : t.slice(0, 3000) }), { headers: hdr });
+  }
+  const now = Date.now();
+  if (HZ_MEM && HZ_MEM.until > now) return new Response(HZ_MEM.body, { headers: { ...hdr, 'X-Cache': 'MEM' } });
+  const key = new Request('https://nomad-cache.internal/hazards/v1'), c = caches.default;
+  const hit = await c.match(key).catch(() => null);
+  if (hit) { const body = await hit.text(); HZ_MEM = { body, until: now + 60000 }; return new Response(body, { headers: { ...hdr, 'X-Cache': 'HIT' } }); }
+  const src = {}, out = [];
+  await Promise.all(Object.entries(HZ_FEEDS).map(async ([s, u]) => {
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+      const r = await fetch(u, { signal: ctl.signal, headers: { 'User-Agent': 'NOMAD-VanLifeOS/1.0 (nomadvanlifeos@gmail.com)', Accept: 'application/json' } });
+      clearTimeout(to);
+      if (!r.ok) throw new Error('upstream ' + r.status);
+      const j = await r.json(), f = j.features || [];
+      let n = 0;
+      for (const x of f) { const pt = hzPoint(x.geometry); if (!pt || !isFinite(pt[0]) || !isFinite(pt[1])) continue; out.push({ s, lng: Math.round(pt[0] * 1e4) / 1e4, lat: Math.round(pt[1] * 1e4) / 1e4, p: hzProps(x.properties) }); n++; }
+      src[s] = { ok: true, n };
+    } catch (e) { src[s] = { ok: false, err: String(e.message || e).slice(0, 80) }; }
+  }));
+  const body = JSON.stringify({ at: new Date().toISOString(), src, f: out });
+  HZ_MEM = { body, until: now + HZ_TTL * 1000 };
+  if (Object.values(src).some(x => x.ok)) await c.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + HZ_TTL } })).catch(() => {});
   return new Response(body, { headers: { ...hdr, 'X-Cache': 'MISS' } });
 }

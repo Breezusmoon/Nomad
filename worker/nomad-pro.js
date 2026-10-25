@@ -18,6 +18,7 @@
  *   POST /refresh {token}                     → {token,…}   renewals / cancellations
  *   POST /restore {key:'XXXX-XXXX-XXXX'}      → {token,…}   new phone
  *   POST /portal  {token}                     → {url}       manage / cancel subscription
+ *   GET  /met?lat=&lon=                       → MET Norway forecast   cached weather proxy (Australia only, ~1 km grid, free for commercial use)
  *   GET  /fuel?lat=&lng=                      → {v,s:[…]}   live government servo prices within ~150 km (refreshed every 2 min)
  */
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -49,6 +50,7 @@ export default {
         case '/restore': return json(await restore(env, body.key || ''));
         case '/portal': return json(await portal(env, body.token || ''));
         case '/fuel': return fuelHandler(env, url, cors);
+        case '/met': return metHandler(url, cors);
         case '/': return json({ ok: true, service: 'nomad-pro', fuel: fuelStates(env) });
         default: return json({ error: 'not_found' }, 404);
       }
@@ -248,4 +250,33 @@ async function nswState(env, ver, qs) {
   const rows = [];
   for (const code in per) { const s = st[code]; if (!s) continue; const loc = s.location || {}; const r = fRow(loc.latitude, loc.longitude, s.name, s.brand, per[code][0], per[code][1], String(s.state || 'NSW').toUpperCase()); if (r) rows.push(r); }
   return rows;
+}
+
+
+/* ── Weather: MET Norway locationforecast, cached so every user near the same spot shares one upstream call ── */
+const MET_MEM = new Map();
+const MET_UA = 'NOMAD-VanLifeOS/1.0 (https://breezusmoon.github.io/Nomad/; nomadvanlifeos@gmail.com)';
+async function metHandler(url, cors) {
+  const lat = +url.searchParams.get('lat'), lon = +url.searchParams.get('lon');
+  const hdr = { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' };
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat > -9 || lat < -45 || lon < 110 || lon > 156)
+    return new Response('{"error":"bad_location"}', { status: 400, headers: hdr });
+  const la = lat.toFixed(2), lo = lon.toFixed(2), name = la + ',' + lo, now = Date.now();
+  const mem = MET_MEM.get(name);
+  if (mem && mem.until > now) return new Response(mem.body, { headers: { ...hdr, 'X-Cache': 'MEM' } });
+  const key = new Request('https://nomad-cache.internal/met/' + name), c = caches.default;
+  const hit = await c.match(key).catch(() => null);
+  if (hit) { const body = await hit.text(); MET_MEM.set(name, { body, until: now + 300000 }); return new Response(body, { headers: { ...hdr, 'X-Cache': 'HIT' } }); }
+  const r = await fetch('https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=' + la + '&lon=' + lo, { headers: { 'User-Agent': MET_UA, Accept: 'application/json' } });
+  if (!r.ok) {
+    if (mem) return new Response(mem.body, { headers: { ...hdr, 'X-Cache': 'STALE' } });
+    return new Response(JSON.stringify({ error: 'upstream ' + r.status }), { status: 502, headers: hdr });
+  }
+  const body = await r.text();
+  const exp = Date.parse(r.headers.get('expires') || '') || 0;
+  const ttl = Math.max(600, Math.min(3600, Math.round((exp - now) / 1000) || 1800));
+  if (MET_MEM.size > 500) MET_MEM.delete(MET_MEM.keys().next().value);
+  MET_MEM.set(name, { body, until: now + ttl * 1000 });
+  await c.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + ttl } })).catch(() => {});
+  return new Response(body, { headers: { ...hdr, 'X-Cache': 'MISS' } });
 }

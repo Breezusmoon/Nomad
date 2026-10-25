@@ -238,7 +238,7 @@ async function nswState(env, ver, qs) {
   const tok = await edgeCached('fuelmeta/nswtoken', 43000, async () => (await getJ('https://api.onegov.nsw.gov.au/oauth/client_credential/accesstoken?grant_type=client_credentials', { Authorization: 'Basic ' + btoa(env.NSW_FUEL_KEY + ':' + env.NSW_FUEL_SECRET) })).access_token);
   const d = new Date(), pad = n => String(n).padStart(2, '0'), h = d.getUTCHours() % 12 || 12;
   const stamp = `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} ${d.getUTCHours() < 12 ? 'AM' : 'PM'}`;
-  const j = await getJ('https://api.onegov.nsw.gov.au/FuelPriceCheck/' + ver + '/fuel/prices' + qs, { Authorization: 'Bearer ' + tok, apikey: env.NSW_FUEL_KEY, transactionid: crypto.randomUUID(), requesttimestamp: stamp, 'Content-Type': 'application/json; charset=utf-8' });
+  const j = await getJ('https://api.onegov.nsw.gov.au/FuelPriceCheck/' + ver + '/fuel/prices' + qs, { Authorization: 'Bearer ' + tok, apikey: env.NSW_FUEL_KEY, transactionid: crypto.randomUUID(), requesttimestamp: stamp });
   const st = {}; (j.stations || []).forEach(s => st[s.code] = s);
   const per = {};
   for (const p of j.prices || []) {

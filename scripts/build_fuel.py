@@ -51,6 +51,17 @@ def epoch(s):
         except Exception: pass
     return None
 
+def syd_epoch(s):
+    # NSW FuelCheck times are Sydney local time
+    t = epoch(s)
+    if not t: return None
+    try:
+        from zoneinfo import ZoneInfo
+        naive = datetime.datetime.utcfromtimestamp(t)
+        return int(naive.replace(tzinfo=ZoneInfo('Australia/Sydney')).timestamp())
+    except Exception:
+        return t - 36000
+
 # ── WA: FuelWatch via FuelWide (shape detected at runtime, logged for checking) ──
 def find_list(o):
     if isinstance(o, list) and o and isinstance(o[0], dict): return o
@@ -129,7 +140,7 @@ def nsw(key, secret):
         for p in j.get('prices', []):
             g, dv = grade(p.get('fueltype', '')), dollars(p.get('price'))
             if not g or not dv: continue
-            e = per.setdefault(p['stationcode'], [{}, 0]); e[0][g] = dv; e[1] = max(e[1], epoch(p.get('lastupdated')) or 0)
+            e = per.setdefault(p['stationcode'], [{}, 0]); e[0][g] = dv; e[1] = max(e[1], syd_epoch(p.get('lastupdated')) or 0)
         for code, (prices, ts) in per.items():
             s = st.get(code)
             if s:

@@ -12,7 +12,9 @@ service cloud.firestore {
     match /nomad_chat/{id} {
       allow read: if true;
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid && short('text', 400) && short('alias', 24)
-                    && (request.resource.data.type == 'msg' || isAdmin());
+                    && (request.resource.data.type in ['msg', 'join'] || isAdmin())
+                    // a @username on a message must belong to the sender
+                    && (!('u' in request.resource.data) || get(/databases/$(db)/documents/usernames/$(request.resource.data.u)).data.uid == request.auth.uid);
       allow delete: if isOwner() || isAdmin();
     }
     match /nomad_presence/{uid} {
@@ -58,6 +60,37 @@ service cloud.firestore {
         && request.resource.data.cell is string && request.resource.data.cell.size() <= 12
         && request.resource.data.ts == request.time;
       allow delete: if isAdmin();
+    }
+    // NOMAD ID: unique usernames. oh = sha256 of a secret only the owner's encrypted backup knows (lets them move it to a new phone)
+    match /usernames/{name} {
+      allow read: if true;
+      allow create: if signedIn() && name.matches('^[a-z0-9_.]{3,20}$') && request.resource.data.uid == request.auth.uid
+        && request.resource.data.u == name && request.resource.data.keys().hasOnly(['uid','u','av','oh','ts']);
+      allow update: if signedIn() && (
+        (resource.data.uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['av','p'])) ||
+        (request.resource.data.uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid','oh','p'])
+          && hashing.sha256(request.resource.data.p).toHexString().lower() == resource.data.oh && request.resource.data.oh != resource.data.oh));
+      allow delete: if isAdmin();
+    }
+    // Encrypted backups (AES-256, key never leaves the phone). Doc id is derived from the recovery key, so get-only, no listing.
+    match /backups/{id} {
+      allow get: if true;
+      allow create, update: if signedIn() && id.size() == 40 && request.resource.data.d is string && request.resource.data.d.size() < 1000000
+        && request.resource.data.keys().hasOnly(['d','iv','z','v','ts']);
+    }
+    // Founders: first 100 NOMAD IDs get Pro for life. Counter + one doc per username, enforced together.
+    match /founders/{name} {
+      allow read: if true;
+      allow create: if signedIn() && get(/databases/$(db)/documents/usernames/$(name)).data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['n','ts']) && request.resource.data.n <= 100
+        && request.resource.data.n == getAfter(/databases/$(db)/documents/meta/founders).data.count;
+    }
+    match /meta/founders {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['count','last']) && request.resource.data.count == 1
+        && !exists(/databases/$(db)/documents/founders/$(request.resource.data.last)) && existsAfter(/databases/$(db)/documents/founders/$(request.resource.data.last));
+      allow update: if signedIn() && request.resource.data.keys().hasOnly(['count','last']) && request.resource.data.count == resource.data.count + 1 && request.resource.data.count <= 100
+        && !exists(/databases/$(db)/documents/founders/$(request.resource.data.last)) && existsAfter(/databases/$(db)/documents/founders/$(request.resource.data.last));
     }
     match /reports/{id} { allow create: if signedIn(); allow read, delete: if isAdmin(); }
     match /pro_waitlist/{id} { allow create: if short('email', 120); allow read, delete: if isAdmin(); }

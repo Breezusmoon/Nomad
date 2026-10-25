@@ -6,6 +6,9 @@
  *   PRICE_MONTHLY    (text)    Stripe Price ID for A$4.99/month, price_…
  *   PRICE_YEARLY     (text)    Stripe Price ID for A$39/year, price_…
  *   APP_URL          (text)    https://breezusmoon.github.io/Nomad/
+ *   QLD_FUEL_TOKEN   (secret)  optional — QLD Fuel Price Reporting subscriber token  → live QLD prices
+ *   NSW_FUEL_KEY / NSW_FUEL_SECRET (secret) optional — api.nsw.gov.au Fuel API          → live NSW, ACT, TAS prices
+ *   SA_FUEL_TOKEN    (secret)  optional — SA Fuel Pricing Information token          → live SA prices
  *   GH_TOKEN         (secret)  optional — GitHub fine-grained token (repo Nomad, Actions: read & write).
  *                              With a Cron Trigger of  "every 15 minutes" (cron 0/15 * * * * — see setup steps)  this refreshes fuel prices every 15 minutes.
  *
@@ -15,6 +18,7 @@
  *   POST /refresh {token}                     → {token,…}   renewals / cancellations
  *   POST /restore {key:'XXXX-XXXX-XXXX'}      → {token,…}   new phone
  *   POST /portal  {token}                     → {url}       manage / cancel subscription
+ *   GET  /fuel?lat=&lng=                      → {v,s:[…]}   live government servo prices within ~150 km (refreshed every 2 min)
  */
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const GRACE = 3 * 86400 * 1000;          // keep Pro 3 days past period end while Stripe retries a card
@@ -44,7 +48,8 @@ export default {
         case '/refresh': return json(await refresh(env, body.token || ''));
         case '/restore': return json(await restore(env, body.key || ''));
         case '/portal': return json(await portal(env, body.token || ''));
-        case '/': return json({ ok: true, service: 'nomad-pro' });
+        case '/fuel': return fuelHandler(env, url, cors);
+        case '/': return json({ ok: true, service: 'nomad-pro', fuel: fuelStates(env) });
         default: return json({ error: 'not_found' }, 404);
       }
     } catch (e) {
@@ -132,4 +137,114 @@ async function portal(env, token) {
   const t = await unsign(env, token);
   const p = await stripe(env, 'POST', '/billing_portal/sessions', { customer: t.c, return_url: env.APP_URL + '?pro=manage' });
   return { url: p.url };
+}
+
+
+/* ── Live fuel: government feeds, cached at the edge for 2 minutes, filtered to the user's area ── */
+const FUEL_TTL = 120, SITE_TTL = 86400;
+const FEEDS = {
+  QLD: { need: e => e.QLD_FUEL_TOKEN, box: [-29.3, -9, 137.9, 154], build: e => fpdState(e.QLD_FUEL_TOKEN, 'https://fppdirectapi-prod.fuelpricesqld.com.au', 1, 'QLD') },
+  SA:  { need: e => e.SA_FUEL_TOKEN,  box: [-38.2, -25.9, 129, 141.1], build: e => fpdState(e.SA_FUEL_TOKEN, 'https://fppdirectapi-prod.safuelpricinginformation.com.au', 4, 'SA') },
+  NSW: { need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-37.6, -28.1, 140.9, 153.7], build: e => nswState(e, '') },
+  TAS: { need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-43.8, -39.4, 143.5, 148.6], build: e => nswState(e, '?states=TAS') }
+};
+const fuelStates = env => Object.keys(FEEDS).filter(k => FEEDS[k].need(env));
+async function fuelHandler(env, url, cors) {
+  const lat = +url.searchParams.get('lat'), lng = +url.searchParams.get('lng');
+  const hdr = { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' };
+  if (!(lat < -9 && lat > -45 && lng > 112 && lng < 155)) return new Response(JSON.stringify({ error: 'bad_location' }), { status: 400, headers: hdr });
+  const pad = 1.6, want = fuelStates(env).filter(k => { const b = FEEDS[k].box; return lat > b[0] - pad && lat < b[1] + pad && lng > b[2] - pad && lng < b[3] + pad; });
+  const out = [], states = {};
+  await Promise.all(want.map(async k => {
+    try {
+      const rows = await edgeCached('fuel/' + k, FUEL_TTL, () => FEEDS[k].build(env));
+      states[k] = rows.length;
+      for (const r of rows) if (Math.abs(r[0] - lat) < 1.4 && Math.abs(r[1] - lng) < 1.6) out.push(r);
+    } catch (e) { states[k] = 'error'; }
+  }));
+  return new Response(JSON.stringify({ v: Math.floor(Date.now() / 1000), states, s: out }), { headers: hdr });
+}
+// Cache API at this edge location (free); one upstream call per location per TTL
+async function edgeCached(name, ttl, make) {
+  const key = new Request('https://nomad-cache.internal/' + name), c = caches.default;
+  const hit = await c.match(key);
+  if (hit) return hit.json();
+  const data = await make();
+  await c.put(key, new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + ttl } }));
+  return data;
+}
+async function getJ(u, headers) {
+  const r = await fetch(u, { headers: { 'User-Agent': 'NOMAD-fuel/1.0', Accept: 'application/json', ...headers } });
+  if (!r.ok) throw new Error('upstream ' + r.status);
+  return r.json();
+}
+function fGrade(name) {
+  const n = String(name).toLowerCase().replace(/ /g, '');
+  if (/premiumdiesel|pdl|pdsl|branddiesel|ultimatediesel|vortexdiesel/.test(n)) return 'PDSL';
+  if (/diesel|^dl$|^dsl$/.test(n)) return 'DSL';
+  if (/e10/.test(n)) return 'E10';
+  if (/e85/.test(n)) return 'E85';
+  if (/lpg|autogas/.test(n)) return 'LPG';
+  if (/98/.test(n)) return 'P98';
+  if (/95|pulp|premiumunleaded/.test(n)) return 'P95';
+  if (/91|ulp|unleaded|petrol/.test(n)) return 'U91';
+  return null;
+}
+function fDollars(v) {
+  v = parseFloat(v); if (!(v > 0) || v >= 9999) return null;
+  if (v > 1000) v /= 1000; else if (v > 20) v /= 100;
+  return v > 1.2 && v < 6 ? Math.round(v * 1000) / 1000 : null;
+}
+function fEpoch(s) {
+  if (!s) return 0; s = String(s);
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}):(\d{2})/);
+  const t = m ? Date.UTC(+m[3], m[2] - 1, +m[1], +m[4], +m[5], +m[6]) : Date.parse(s.endsWith('Z') ? s : s + 'Z');
+  return t ? Math.floor(t / 1000) : 0;
+}
+// NSW FuelCheck times are Sydney local time, not UTC
+function sydToEpoch(s) {
+  const naive = fEpoch(s) * 1000; if (!naive) return 0;
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'Australia/Sydney', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(naive)).map(p => [p.type, p.value]));
+  const off = Date.UTC(+parts.year, parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second) - naive;
+  return Math.floor((naive - off) / 1000);
+}
+function fRow(lat, lng, name, brand, prices, ts, st) {
+  lat = +lat; lng = +lng;
+  if (!(lat > -44.5 && lat < -9 && lng > 112 && lng < 154.5) || !Object.keys(prices).length) return null;
+  return [Math.round(lat * 1e5) / 1e5, Math.round(lng * 1e5) / 1e5, String(name || '').slice(0, 60), String(brand || '').slice(0, 30), prices, ts || Math.floor(Date.now() / 1000), st];
+}
+async function fpdState(token, base, region, st) {
+  const H = { Authorization: 'FPDAPI SubscriberToken=' + token, 'Content-Type': 'application/json' };
+  const q = 'countryId=21&geoRegionLevel=3&geoRegionId=' + region;
+  const meta = await edgeCached('fuelmeta/' + st, SITE_TTL, async () => {
+    const [f, b, s] = await Promise.all([getJ(base + '/Subscriber/GetCountryFuelTypes?countryId=21', H), getJ(base + '/Subscriber/GetCountryBrands?countryId=21', H), getJ(base + '/Subscriber/GetFullSiteDetails?' + q, H)]);
+    const fuels = {}, brands = {}, sites = {};
+    (f.Fuels || []).forEach(x => fuels[x.FuelId] = fGrade(x.Name));
+    (b.Brands || []).forEach(x => brands[x.BrandId] = x.Name);
+    (s.S || []).forEach(x => sites[x.S] = [x.Lat, x.Lng, x.N, brands[x.B] || '']);
+    return { fuels, sites };
+  });
+  const per = {};
+  for (const p of (await getJ(base + '/Price/GetSitesPrices?' + q, H)).SitePrices || []) {
+    const g = meta.fuels[p.FuelId], v = fDollars(p.Price); if (!g || !v) continue;
+    const e = per[p.SiteId] || (per[p.SiteId] = [{}, 0]); e[0][g] = v; e[1] = Math.max(e[1], fEpoch(p.TransactionDateUtc));
+  }
+  const rows = [];
+  for (const id in per) { const s = meta.sites[id]; if (s) { const r = fRow(s[0], s[1], s[2], s[3], per[id][0], per[id][1], st); if (r) rows.push(r); } }
+  return rows;
+}
+async function nswState(env, qs) {
+  const tok = await edgeCached('fuelmeta/nswtoken', 36000, async () => (await getJ('https://api.onegov.nsw.gov.au/oauth/client_credential/accesstoken?grant_type=client_credentials', { Authorization: 'Basic ' + btoa(env.NSW_FUEL_KEY + ':' + env.NSW_FUEL_SECRET) })).access_token);
+  const d = new Date(), pad = n => String(n).padStart(2, '0'), h = d.getUTCHours() % 12 || 12;
+  const stamp = `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} ${d.getUTCHours() < 12 ? 'AM' : 'PM'}`;
+  const j = await getJ('https://api.onegov.nsw.gov.au/FuelPriceCheck/v2/fuel/prices' + qs, { Authorization: 'Bearer ' + tok, apikey: env.NSW_FUEL_KEY, transactionid: crypto.randomUUID(), requesttimestamp: stamp, 'Content-Type': 'application/json; charset=utf-8' });
+  const st = {}; (j.stations || []).forEach(s => st[s.code] = s);
+  const per = {};
+  for (const p of j.prices || []) {
+    const g = fGrade(p.fueltype), v = fDollars(p.price); if (!g || !v) continue;
+    const e = per[p.stationcode] || (per[p.stationcode] = [{}, 0]); e[0][g] = v; e[1] = Math.max(e[1], sydToEpoch(p.lastupdated));
+  }
+  const rows = [];
+  for (const code in per) { const s = st[code]; if (!s) continue; const loc = s.location || {}; const r = fRow(loc.latitude, loc.longitude, s.name, s.brand, per[code][0], per[code][1], String(s.state || 'NSW').toUpperCase()); if (r) rows.push(r); }
+  return rows;
 }

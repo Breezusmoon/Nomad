@@ -161,7 +161,7 @@ async function fuelHandler(env, url, cors) {
       const rows = await edgeCached('fuel/' + k, FEEDS[k].ttl || FUEL_TTL, () => FEEDS[k].build(env));
       states[k] = rows.length;
       for (const r of rows) if (Math.abs(r[0] - lat) < 1.4 && Math.abs(r[1] - lng) < 1.6) out.push(r);
-    } catch (e) { states[k] = 'error'; }
+    } catch (e) { states[k] = 'error: ' + String(e.message || e).slice(0, 80); }
   }));
   return new Response(JSON.stringify({ v: Math.floor(Date.now() / 1000), states, s: out }), { headers: hdr });
 }
@@ -176,7 +176,7 @@ async function edgeCached(name, ttl, make) {
 }
 async function getJ(u, headers) {
   const r = await fetch(u, { headers: { 'User-Agent': 'NOMAD-fuel/1.0', Accept: 'application/json', ...headers } });
-  if (!r.ok) throw new Error('upstream ' + r.status);
+  if (!r.ok) throw new Error('upstream ' + r.status + ' ' + new URL(u).pathname.split('/').slice(-2).join('/'));
   return r.json();
 }
 function fGrade(name) {

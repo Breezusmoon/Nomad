@@ -145,8 +145,9 @@ const FUEL_TTL = 120, SITE_TTL = 86400;
 const FEEDS = {
   QLD: { need: e => e.QLD_FUEL_TOKEN, box: [-29.3, -9, 137.9, 154], build: e => fpdState(e.QLD_FUEL_TOKEN, 'https://fppdirectapi-prod.fuelpricesqld.com.au', 1, 'QLD') },
   SA:  { need: e => e.SA_FUEL_TOKEN,  box: [-38.2, -25.9, 129, 141.1], build: e => fpdState(e.SA_FUEL_TOKEN, 'https://fppdirectapi-prod.safuelpricinginformation.com.au', 4, 'SA') },
-  NSW: { need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-37.6, -28.1, 140.9, 153.7], build: e => nswState(e, '') },
-  TAS: { need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-43.8, -39.4, 143.5, 148.6], build: e => nswState(e, '?states=TAS') }
+  // NSW free plan = 2,500 calls/month, so NSW refreshes every 90 min and TAS every 6 h (QLD/SA every 2 min)
+  NSW: { ttl: 5400, need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-37.6, -28.1, 140.9, 153.7], build: e => nswState(e, '') },
+  TAS: { ttl: 21600, need: e => e.NSW_FUEL_KEY && e.NSW_FUEL_SECRET, box: [-43.8, -39.4, 143.5, 148.6], build: e => nswState(e, '?states=TAS') }
 };
 const fuelStates = env => Object.keys(FEEDS).filter(k => FEEDS[k].need(env));
 async function fuelHandler(env, url, cors) {
@@ -157,7 +158,7 @@ async function fuelHandler(env, url, cors) {
   const out = [], states = {};
   await Promise.all(want.map(async k => {
     try {
-      const rows = await edgeCached('fuel/' + k, FUEL_TTL, () => FEEDS[k].build(env));
+      const rows = await edgeCached('fuel/' + k, FEEDS[k].ttl || FUEL_TTL, () => FEEDS[k].build(env));
       states[k] = rows.length;
       for (const r of rows) if (Math.abs(r[0] - lat) < 1.4 && Math.abs(r[1] - lng) < 1.6) out.push(r);
     } catch (e) { states[k] = 'error'; }
@@ -234,7 +235,7 @@ async function fpdState(token, base, region, st) {
   return rows;
 }
 async function nswState(env, qs) {
-  const tok = await edgeCached('fuelmeta/nswtoken', 36000, async () => (await getJ('https://api.onegov.nsw.gov.au/oauth/client_credential/accesstoken?grant_type=client_credentials', { Authorization: 'Basic ' + btoa(env.NSW_FUEL_KEY + ':' + env.NSW_FUEL_SECRET) })).access_token);
+  const tok = await edgeCached('fuelmeta/nswtoken', 43000, async () => (await getJ('https://api.onegov.nsw.gov.au/oauth/client_credential/accesstoken?grant_type=client_credentials', { Authorization: 'Basic ' + btoa(env.NSW_FUEL_KEY + ':' + env.NSW_FUEL_SECRET) })).access_token);
   const d = new Date(), pad = n => String(n).padStart(2, '0'), h = d.getUTCHours() % 12 || 12;
   const stamp = `${pad(d.getUTCDate())}/${pad(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${pad(h)}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())} ${d.getUTCHours() < 12 ? 'AM' : 'PM'}`;
   const j = await getJ('https://api.onegov.nsw.gov.au/FuelPriceCheck/v2/fuel/prices' + qs, { Authorization: 'Bearer ' + tok, apikey: env.NSW_FUEL_KEY, transactionid: crypto.randomUUID(), requesttimestamp: stamp, 'Content-Type': 'application/json; charset=utf-8' });

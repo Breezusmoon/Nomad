@@ -20,6 +20,7 @@
  *   POST /portal  {token}                     → {url}       manage / cancel subscription
  *   GET  /hazards                             → live bushfire / emergency incidents (NSW RFS, QLD Fire, VicEmergency), cached 3 min
  *   GET  /met?lat=&lon=                       → MET Norway forecast   cached weather proxy (Australia only, ~1 km grid, free for commercial use)
+ *   GET  /geo?lat=&lon=  or  /geo?q=town   → place name lookup (OpenStreetMap Nominatim), cached 30 days so the app stays inside Nominatim's usage policy
  *   GET  /fuel?lat=&lng=                      → {v,s:[…]}   live government servo prices within ~150 km (refreshed every 2 min)
  */
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -53,6 +54,7 @@ export default {
         case '/fuel': return fuelHandler(env, url, cors);
         case '/met': return metHandler(url, cors);
         case '/hazards': return hazardsHandler(url, cors);
+        case '/geo': return geoHandler(url, cors);
         case '/': return json({ ok: true, service: 'nomad-pro', fuel: fuelStates(env) });
         default: return json({ error: 'not_found' }, 404);
       }
@@ -341,5 +343,39 @@ async function hazardsHandler(url, cors) {
   const body = JSON.stringify({ at: new Date().toISOString(), src, f: out });
   HZ_MEM = { body, until: now + HZ_TTL * 1000 };
   if (Object.values(src).some(x => x.ok)) await c.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + HZ_TTL } })).catch(() => {});
+  return new Response(body, { headers: { ...hdr, 'X-Cache': 'MISS' } });
+}
+
+
+/* ── Place names: Nominatim behind an edge cache (one upstream call per ~1 km cell per month) ── */
+const GEO_MEM = new Map();
+let GEO_LAST = 0;
+async function geoHandler(url, cors) {
+  const hdr = { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=86400' };
+  const q = (url.searchParams.get('q') || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 80);
+  const lat = +url.searchParams.get('lat'), lon = +url.searchParams.get('lon');
+  let name, up, ttl;
+  if (q) { name = 'q/' + encodeURIComponent(q); ttl = 7 * 86400; up = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=au&accept-language=en&addressdetails=1&q=' + encodeURIComponent(q); }
+  else if (Number.isFinite(lat) && Number.isFinite(lon) && lat < -9 && lat > -45 && lon > 110 && lon < 156) {
+    const la = lat.toFixed(2), lo = lon.toFixed(2); name = 'r/' + la + ',' + lo; ttl = 30 * 86400;
+    up = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=en&lat=' + la + '&lon=' + lo;
+  } else return new Response('{"error":"bad_query"}', { status: 400, headers: hdr });
+  const mem = GEO_MEM.get(name);
+  if (mem) return new Response(mem, { headers: { ...hdr, 'X-Cache': 'MEM' } });
+  const key = new Request('https://nomad-cache.internal/geo/' + name), c = caches.default;
+  const hit = await c.match(key).catch(() => null);
+  if (hit) { const body = await hit.text(); GEO_MEM.set(name, body); return new Response(body, { headers: { ...hdr, 'X-Cache': 'HIT' } }); }
+  const wait = GEO_LAST + 1100 - Date.now(); GEO_LAST = Date.now() + Math.max(0, wait);
+  if (wait > 0) { if (wait > 4000) return new Response('{"error":"busy"}', { status: 503, headers: hdr }); await new Promise(r => setTimeout(r, wait)); }
+  const r = await fetch(up, { headers: { 'User-Agent': MET_UA, Accept: 'application/json', Referer: 'https://breezusmoon.github.io/Nomad/' } });
+  if (!r.ok) return new Response(JSON.stringify({ error: 'upstream ' + r.status }), { status: 502, headers: hdr });
+  const j = await r.json(), pick = a => a.suburb || a.town || a.village || a.city || a.hamlet || a.locality || a.county || '';
+  let out;
+  if (q) { const x = Array.isArray(j) && j[0]; out = x ? { lat: +x.lat, lng: +x.lon, place: pick(x.address || {}) || x.name || '', region: (x.address || {}).state || '' } : { none: true }; }
+  else { const a = j.address || {}; out = { place: pick(a), region: a.state || '' }; }
+  const body = JSON.stringify(out);
+  if (GEO_MEM.size > 2000) GEO_MEM.delete(GEO_MEM.keys().next().value);
+  GEO_MEM.set(name, body);
+  await c.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=' + ttl } })).catch(() => {});
   return new Response(body, { headers: { ...hdr, 'X-Cache': 'MISS' } });
 }

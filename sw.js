@@ -4,7 +4,7 @@
      nomad-libs   map engine + fonts (kept across releases)
      nomad-tiles  map tiles/styles/glyphs (kept across releases, capped)
      nomad-data   places database tiles (kept across releases, capped) */
-const CACHE = 'nomad-v2-56-0';
+const CACHE = 'nomad-v2-57-0';
 const KEEP = ['nomad-libs', 'nomad-tiles', 'nomad-data', 'nomad-fuel'];
 const SHELL = ['./', 'index.html', 'data/radio_au.json', 'manifest.json', 'logo.webp', 'logo-sm.webp', 'scene.webp', 'banner.webp', 'av-kombi.webp', 'favicon.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 

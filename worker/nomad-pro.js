@@ -6,6 +6,8 @@
  *   PRICE_MONTHLY    (text)    Stripe Price ID for A$4.99/month, price_…
  *   PRICE_YEARLY     (text)    Stripe Price ID for A$39/year, price_…
  *   APP_URL          (text)    https://breezusmoon.github.io/Nomad/
+ *   GH_TOKEN         (secret)  optional — GitHub fine-grained token (repo Nomad, Actions: read & write).
+ *                              With a Cron Trigger of  "every 15 minutes" (cron 0/15 * * * * — see setup steps)  this refreshes fuel prices every 15 minutes.
  *
  * Endpoints (all JSON):
  *   POST /checkout {plan:'monthly'|'yearly'}  → {url}       Stripe Checkout page
@@ -19,6 +21,15 @@ const GRACE = 3 * 86400 * 1000;          // keep Pro 3 days past period end whil
 const OK_STATUS = ['active', 'trialing', 'past_due'];
 
 export default {
+  // Cron Trigger: kick the fuel-price job on GitHub (GitHub's own schedule only runs every few hours)
+  async scheduled(event, env, ctx) {
+    if (!env.GH_TOKEN) return;
+    ctx.waitUntil(fetch('https://api.github.com/repos/Breezusmoon/Nomad/actions/workflows/fuel.yml/dispatches', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + env.GH_TOKEN, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'nomad-pro', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main' })
+    }));
+  },
   async fetch(req, env) {
     const origin = new URL(env.APP_URL).origin;
     const cors = { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };

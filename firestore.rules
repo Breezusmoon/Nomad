@@ -1,107 +1,111 @@
 rules_version = '2';
-// NOMAD Firestore rules — paste into Firebase console → Firestore Database → Rules → Publish.
-// Also turn on: Authentication → Sign-in method → Anonymous → Enable.
+// NOMAD Firestore rules. Everything not listed here is blocked.
 service cloud.firestore {
   match /databases/{db}/documents {
     function signedIn() { return request.auth != null; }
-    function isOwner() { return signedIn() && resource.data.uid == request.auth.uid; }
-    function short(f, n) { return request.resource.data[f] is string && request.resource.data[f].size() <= n; }
-    // Add your own UID here after you post once (Firebase console → Authentication → Users) to get admin delete powers.
-    function isAdmin() { return signedIn() && request.auth.uid in ['PASTE_YOUR_UID_HERE']; }
+    function me() { return request.auth.uid; }
+    function data() { return request.resource.data; }
+    function str(f, n) { return data()[f] is string && data()[f].size() <= n; }
+    function num(f) { return data()[f] is number; }
+    function isOwner() { return signedIn() && resource.data.uid == me(); }
+    // Owner moderation: add your Firebase user ID here to delete anything. Leave as is to keep it off.
+    function isAdmin() { return signedIn() && me() in ['PASTE_YOUR_UID_HERE']; }
 
-    match /nomad_chat/{id} {
+    // ── NOMAD ID: unique @usernames ──
+    match /usernames/{name} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && short('text', 400) && short('alias', 24)
-                    && (request.resource.data.type in ['msg', 'join'] || isAdmin())
-                    // a @username on a message must belong to the sender
-                    && (!('u' in request.resource.data) || get(/databases/$(db)/documents/usernames/$(request.resource.data.u)).data.uid == request.auth.uid);
-      allow delete: if isOwner() || isAdmin();
+      allow create: if signedIn() && name.matches('^[a-z0-9_.]{3,20}$') && data().uid == me() && data().u == name
+        && data().keys().hasOnly(['uid','u','av','oh','ts']) && str('av', 20) && str('oh', 64) && data().ts == request.time;
+      // owner can change avatar / clear proof; moving to a new phone needs the secret only the encrypted backup holds
+      allow update: if signedIn() && (
+        (resource.data.uid == me() && data().diff(resource.data).affectedKeys().hasOnly(['av','p']))
+        || (data().uid == me() && data().diff(resource.data).affectedKeys().hasOnly(['uid','oh','p']) && data().p is string
+            && hashing.sha256(data().p).toHexString().lower() == resource.data.oh && data().oh != resource.data.oh));
+      allow delete: if isAdmin();
     }
-    match /nomad_presence/{uid} {
+    // ── Encrypted backups (AES-256 on the phone; id derived from the recovery key). Get by id only — no listing. ──
+    match /backups/{id} {
+      allow get: if true;
+      allow create, update: if signedIn() && id.matches('^[0-9a-f]{40}$') && data().keys().hasOnly(['d','iv','z','v','ts'])
+        && str('d', 1000000) && str('iv', 40) && data().ts == request.time;
+    }
+    // ── Founders: first 100 NOMAD IDs. Counter and founder doc must change together. ──
+    match /founders/{name} {
       allow read: if true;
-      allow write: if signedIn() && uid == request.auth.uid;
+      allow create: if signedIn() && get(/databases/$(db)/documents/usernames/$(name)).data.uid == me()
+        && data().keys().hasOnly(['n','ts']) && data().n is int && data().n <= 100 && data().ts == request.time
+        && data().n == getAfter(/databases/$(db)/documents/meta/founders).data.count;
     }
+    match /meta/founders {
+      allow read: if true;
+      allow create: if signedIn() && data().keys().hasOnly(['count','last']) && data().count == 1
+        && !exists(/databases/$(db)/documents/founders/$(data().last)) && existsAfter(/databases/$(db)/documents/founders/$(data().last));
+      allow update: if signedIn() && data().keys().hasOnly(['count','last']) && data().count == resource.data.count + 1 && data().count <= 100
+        && !exists(/databases/$(db)/documents/founders/$(data().last)) && existsAfter(/databases/$(db)/documents/founders/$(data().last));
+    }
+    // ── Shared spots ──
     match /community_spots/{id} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && short('name', 60) && short('note', 280) && request.resource.data.likes == 0;
-      allow update: if signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
-                    && request.resource.data.likes == resource.data.likes + 1;
+      allow create: if signedIn() && data().uid == me() && data().keys().hasOnly(['name','type','note','lat','lng','alias','uid','likes','ts'])
+        && str('name', 60) && str('note', 280) && str('type', 20) && str('alias', 24) && num('lat') && num('lng') && data().likes == 0 && data().ts == request.time;
+      // one like per person: the like doc and the +1 must land together
+      allow update: if signedIn() && data().diff(resource.data).affectedKeys().hasOnly(['likes']) && data().likes == resource.data.likes + 1
+        && !exists(/databases/$(db)/documents/spot_likes/$(id + '_' + me())) && existsAfter(/databases/$(db)/documents/spot_likes/$(id + '_' + me()));
       allow delete: if isOwner() || isAdmin();
     }
+    match /spot_likes/{lid} {
+      allow create: if signedIn() && lid == data().spot + '_' + me() && data().uid == me() && data().keys().hasOnly(['spot','uid']);
+    }
+    // ── Meetups ──
     match /community_events/{id} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && short('title', 60) && short('note', 280);
-      allow update: if signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['going']);
+      allow create: if signedIn() && data().uid == me() && data().keys().hasOnly(['title','place','when','note','alias','uid','going','ts'])
+        && str('title', 60) && str('place', 60) && str('when', 30) && str('note', 280) && str('alias', 24) && data().going == [me()] && data().ts == request.time;
+      // you can only add or remove yourself
+      allow update: if signedIn() && data().diff(resource.data).affectedKeys().hasOnly(['going'])
+        && data().going.toSet().difference(resource.data.going.toSet()).union(resource.data.going.toSet().difference(data().going.toSet())) == [me()].toSet();
       allow delete: if isOwner() || isAdmin();
     }
+    // ── Toilet ratings ──
     match /dunny_votes/{vid} {
       allow read: if true;
-      allow create: if signedIn() && vid == request.resource.data.osm + '_' + request.auth.uid
-                    && request.resource.data.uid == request.auth.uid && request.resource.data.stars is int
-                    && request.resource.data.stars >= 1 && request.resource.data.stars <= 5;
+      allow create: if signedIn() && vid == data().osm + '_' + me() && data().uid == me() && data().stars is int && data().stars >= 1 && data().stars <= 5;
+      allow delete: if isOwner();
     }
     match /dunny/{osm} {
       allow read: if true;
       allow create, update: if signedIn()
-        && !exists(/databases/$(db)/documents/dunny_votes/$(osm + '_' + request.auth.uid))
-        && existsAfter(/databases/$(db)/documents/dunny_votes/$(osm + '_' + request.auth.uid))
-        && request.resource.data.count == (resource == null ? 0 : resource.data.count) + 1;
+        && !exists(/databases/$(db)/documents/dunny_votes/$(osm + '_' + me()))
+        && existsAfter(/databases/$(db)/documents/dunny_votes/$(osm + '_' + me()))
+        && data().count == (resource == null ? 0 : resource.data.count) + 1
+        && data().sum == (resource == null ? 0 : resource.data.sum) + getAfter(/databases/$(db)/documents/dunny_votes/$(osm + '_' + me())).data.stars
+        && data().keys().hasOnly(['sum','count','name','lat','lng']);
     }
-    match /fuel_reports/{id} {
-      // One doc per person per servo per grade: id = sid_grade_uid. Price within pump-sane bounds, server timestamp only.
+    // ── Seasonal work board ──
+    match /jobs/{id} {
       allow read: if true;
-      allow create, update: if signedIn()
-        && request.resource.data.keys().hasOnly(['sid','g','p','uid','cell','lat','lng','near','ts'])
-        && request.resource.data.uid == request.auth.uid
-        && id == request.resource.data.sid + '_' + request.resource.data.g + '_' + request.auth.uid
-        && request.resource.data.g in ['DSL','U91','E10','P95','P98','PDSL','LPG']
-        && request.resource.data.p is number && request.resource.data.p >= 0.6 && request.resource.data.p <= 3.6
-        && request.resource.data.sid is string && request.resource.data.sid.size() <= 24
-        && request.resource.data.cell is string && request.resource.data.cell.size() <= 12
-        && request.resource.data.ts == request.time;
-      allow delete: if isAdmin();
-    }
-    // NOMAD ID: unique usernames. oh = sha256 of a secret only the owner's encrypted backup knows (lets them move it to a new phone)
-    match /usernames/{name} {
-      allow read: if true;
-      allow create: if signedIn() && name.matches('^[a-z0-9_.]{3,20}$') && request.resource.data.uid == request.auth.uid
-        && request.resource.data.u == name && request.resource.data.keys().hasOnly(['uid','u','av','oh','ts']);
-      allow update: if signedIn() && (
-        (resource.data.uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['av','p'])) ||
-        (request.resource.data.uid == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid','oh','p'])
-          && hashing.sha256(request.resource.data.p).toHexString().lower() == resource.data.oh && request.resource.data.oh != resource.data.oh));
-      allow delete: if isAdmin();
-    }
-    // Encrypted backups (AES-256, key never leaves the phone). Doc id is derived from the recovery key, so get-only, no listing.
-    match /backups/{id} {
-      allow get: if true;
-      allow create, update: if signedIn() && id.size() == 40 && request.resource.data.d is string && request.resource.data.d.size() < 1000000
-        && request.resource.data.keys().hasOnly(['d','iv','z','v','ts']);
-    }
-    // Founders: first 100 NOMAD IDs get Pro for life. Counter + one doc per username, enforced together.
-    match /founders/{name} {
-      allow read: if true;
-      allow create: if signedIn() && get(/databases/$(db)/documents/usernames/$(name)).data.uid == request.auth.uid
-        && request.resource.data.keys().hasOnly(['n','ts']) && request.resource.data.n <= 100
-        && request.resource.data.n == getAfter(/databases/$(db)/documents/meta/founders).data.count;
-    }
-    match /meta/founders {
-      allow read: if true;
-      allow create: if signedIn() && request.resource.data.keys().hasOnly(['count','last']) && request.resource.data.count == 1
-        && !exists(/databases/$(db)/documents/founders/$(request.resource.data.last)) && existsAfter(/databases/$(db)/documents/founders/$(request.resource.data.last));
-      allow update: if signedIn() && request.resource.data.keys().hasOnly(['count','last']) && request.resource.data.count == resource.data.count + 1 && request.resource.data.count <= 100
-        && !exists(/databases/$(db)/documents/founders/$(request.resource.data.last)) && existsAfter(/databases/$(db)/documents/founders/$(request.resource.data.last));
-    }
-    match /founders_chat/{id} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && short('text', 400) && short('alias', 24)
-        && request.resource.data.type in ['msg', 'join']
-        && (isAdmin() || ('u' in request.resource.data
-            && get(/databases/$(db)/documents/usernames/$(request.resource.data.u)).data.uid == request.auth.uid
-            && exists(/databases/$(db)/documents/founders/$(request.resource.data.u))));
+      allow create: if signedIn() && data().uid == me() && data().ts == request.time
+        && data().keys().hasOnly(['title','kind','town','pay','start','desc','accom','v88','phone','email','url','lat','lng','alias','uid','ts'])
+        && str('title', 70) && str('town', 40) && str('pay', 40) && str('desc', 800) && str('phone', 20) && str('email', 80) && str('url', 200) && str('alias', 24) && num('lat') && num('lng');
       allow delete: if isOwner() || isAdmin();
     }
-    match /reports/{id} { allow create: if signedIn(); allow read, delete: if isAdmin(); }
-    match /pro_waitlist/{id} { allow create: if short('email', 120); allow read, delete: if isAdmin(); }
+    // ── Nomad fuel prices: one doc per person per servo per grade, pump-sane prices, server time only ──
+    match /fuel_reports/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() && data().keys().hasOnly(['sid','g','p','uid','cell','lat','lng','near','ts'])
+        && data().uid == me() && id == data().sid + '_' + data().g + '_' + me()
+        && data().g in ['DSL','U91','E10','P95','P98','PDSL','LPG'] && num('p') && data().p >= 0.6 && data().p <= 3.6
+        && str('sid', 24) && str('cell', 12) && data().ts == request.time;
+      allow delete: if isAdmin();
+    }
+    // ── Reports to the owner ──
+    match /reports/{id} {
+      allow create: if signedIn() && data().keys().hasOnly(['path','by','ts']) && data().by == me() && str('path', 120);
+      allow read, delete: if isAdmin();
+    }
+    match /pro_waitlist/{id} {
+      allow create: if data().keys().hasOnly(['email','plan','ts']) && str('email', 120);
+      allow read, delete: if isAdmin();
+    }
   }
 }

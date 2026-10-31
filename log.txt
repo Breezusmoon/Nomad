@@ -1,0 +1,5 @@
+FuelWatch sample: [{"id": 1359, "siteName": "Vibe Ascot", "address": {"id": 1501, "line1": "268 Great Eastern Hwy", "location": "ASCOT", "postCode": 6104, "state": "WA", "latitude": -31.935968, "longitude": 115.934361}, "product": {"shortName": "ULP", "isTruckStop": false, "priceToday": 214.5, "priceTomorrow": 218.7, "isTwoPrice": true, "isLowAromaticFuel": false, "isOutOfSupply": false}, "productFuelType": "ULP", "brandName": "VIB", "isClosedNow": false, "isClosedAllDayTomorrow": false, "drivewayService": "None", "manned": true, "operates247": true, "membershipRequired": false, "entryPermitRequired": false, "c
+WA (FuelWatch): 993 stations
+NSW/ACT/TAS: no key set
+QLD: no token set
+SA: no token set
